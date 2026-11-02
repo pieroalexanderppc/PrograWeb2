@@ -55,6 +55,11 @@ namespace Concreta.ViewModels
         [Display(Name = "Dosis de aditivo")]
         public decimal? AditivoDosisKg { get; set; }
 
+        [Required(ErrorMessage = "Ingresa la reducción de agua del aditivo.")]
+        [Range(typeof(decimal), "0", "30", ErrorMessage = "La reducción de agua va de 0 a 30 %.")]
+        [Display(Name = "Reducción de agua")]
+        public decimal? ReduccionAguaPct { get; set; } = GeneradorAlternativasService.ReduccionAguaAditivoPct;
+
         // ----- Listas para los selects -----
         public IEnumerable<SelectListItem> Proyectos { get; set; }
         public List<Material> Cementos { get; set; } = new List<Material>();
@@ -71,6 +76,8 @@ namespace Concreta.ViewModels
 
     public class EnsayoFormVM
     {
+        public int IdEnsayo { get; set; }
+
         [Required]
         public int IdDiseno { get; set; }
 
@@ -108,6 +115,7 @@ namespace Concreta.ViewModels
         public EnsayoFormVM NuevoEnsayo { get; set; }
         public bool PuedeRegistrarEnsayo { get; set; }
         public bool PuedeEditar { get; set; }
+        public bool PuedeAprobar { get; set; }
     }
 
     public class DisenoFilaVM

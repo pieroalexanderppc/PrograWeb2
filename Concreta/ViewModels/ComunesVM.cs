@@ -52,6 +52,8 @@ namespace Concreta.ViewModels
         public decimal AireAtrapadoPct { get; set; }
         public decimal CostoTotal { get; set; }
         public decimal CO2Total { get; set; }
+        /// <summary>Pesos de obra; null si faltan la humedad o la absorción de algún agregado.</summary>
+        public PesosObra PesosObra { get; set; }
         /// <summary>Alto de la barra: "" normal (28px) o "mix-bar-sm" (8px).</summary>
         public string ClaseBarra { get; set; } = "";
         public bool MostrarLeyenda { get; set; } = true;
@@ -61,6 +63,7 @@ namespace Concreta.ViewModels
             var vm = new DosificacionVM { AireAtrapadoPct = airePct, VolumenAireM3 = airePct / 100m };
             vm.Lineas.AddRange(lineas);
             vm.Segmentos = Composicion.Segmentos(vm.Lineas, vm.VolumenAireM3);
+            vm.PesosObra = CorreccionHumedad.Calcular(vm.Lineas);
             foreach (var l in vm.Lineas)
             {
                 vm.CostoTotal += l.CostoParcial;

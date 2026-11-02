@@ -208,7 +208,7 @@ BEGIN
 END;
 GO
 
--- Resumen de cada diseño con su resistencia real a 28 días (si existe)
+-- Resumen de cada diseño con su resistencia real a 28 días: promedio de las probetas (si existen)
 CREATE OR ALTER VIEW vw_ResumenDiseno AS
 SELECT  dm.IdDiseno,
         dm.Codigo,
@@ -232,10 +232,9 @@ LEFT JOIN DetalleMezcla dc  ON dc.IdDiseno = dm.IdDiseno
                                                   JOIN TipoMaterial t ON t.IdTipoMaterial = m.IdTipoMaterial
                                                  WHERE t.Nombre = 'Cemento')
 LEFT JOIN Material cem      ON cem.IdMaterial = dc.IdMaterial
-OUTER APPLY (SELECT TOP 1 ValorObtenido
+OUTER APPLY (SELECT AVG(e.ValorObtenido) AS ValorObtenido
                FROM EnsayoLaboratorio e
-              WHERE e.IdDiseno = dm.IdDiseno AND e.TipoEnsayo = 'Compresion' AND e.EdadDias = 28
-              ORDER BY e.FechaEnsayo DESC) e28;
+              WHERE e.IdDiseno = dm.IdDiseno AND e.TipoEnsayo = 'Compresion' AND e.EdadDias = 28) e28;
 GO
 
 /* ========================= DATOS INICIALES =========================== */
@@ -306,11 +305,15 @@ INSERT INTO EnsayoLaboratorio (IdDiseno, IdUsuario, TipoEnsayo, EdadDias, ValorO
 
 INSERT INTO Comparacion (IdUsuario, Nombre, Criterio, IdDisenoRecomendado, Justificacion) VALUES
 (2, 'f''c 210: Tipo I vs Tipo IP', 'Balanceado', 2,
- 'Ambos diseños superan f''c = 210 kg/cm2 a 28 días; el diseño con cemento IP tiene menor costo y menor huella de CO2 por m3.');
+ 'Se recomienda DM-2026-0002: cumple f''c = 210 kg/cm² a 28 días (236 kg/cm²) con 29.0 % menos CO2 y 4.7 % menos costo que DM-2026-0001.');
 
+-- Puntajes reales de RecomendacionService con criterio Balanceado
 INSERT INTO ComparacionDetalle (IdComparacion, IdDiseno, Puntaje, Posicion, CumpleResistencia) VALUES
-(1, 1, 62.50, 2, 1),
-(1, 2, 88.00, 1, 1);
+(1, 1, 0.00, 2, 1),
+(1, 2, 100.00, 1, 1);
+
+-- Ensayados: los dos diseños tienen resultado a 28 días
+UPDATE DisenoMezcla SET Estado = 'Ensayado' WHERE IdDiseno IN (1, 2);
 GO
 
 -- Verificación: Tipo I ≈ S/ 339.85 y 341.66 kg CO2e; Tipo IP ≈ S/ 323.73 y 242.4 kg CO2e

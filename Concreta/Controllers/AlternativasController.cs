@@ -44,7 +44,23 @@ namespace Concreta.Controllers
                 return View("Index", vm);
             }
 
-            vm.Resultado = _generador.Generar(entrada, await new DisenoDatosService(Db).CargarParametrosAsync());
+            var datos = new DisenoDatosService(Db);
+            try
+            {
+                vm.Resultado = _generador.Generar(entrada, await datos.CargarParametrosAsync());
+            }
+            catch (DisenoAciException ex)
+            {
+                vm.ErrorCalculo = ex.Message;
+                return View("Index", vm);
+            }
+
+            var historial = await datos.HistorialCementosAsync();
+            foreach (var a in vm.Resultado.Alternativas)
+            {
+                HistorialCemento h;
+                if (historial.TryGetValue(a.Cemento.IdMaterial, out h)) a.Historial = h;
+            }
             return View("Index", vm);
         }
 

@@ -37,7 +37,7 @@ namespace Concreta.Services
                 Costo = d.CostoTotalM3,
                 CO2 = d.HuellaCO2M3,
                 Estado = d.Estado,
-                Resistencia28d = DisenoDatosService.Resistencia28d(d),
+                Resistencia28d = DisenoEstados.Resistencia28d(d),
                 FechaCreacion = d.FechaCreacion
             };
         }

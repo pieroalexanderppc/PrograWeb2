@@ -56,7 +56,7 @@
                         <div class="sub">@m.TipoMaterial.Nombre · @(m.Proveedor ?? "sin proveedor")</div>
                     </td>
                     <td class="num">@m.PesoEspecifico.ToString("0.000", Formato.Pe)</td>
-                    <td class="code">@clave</td>
+                    <td style="font-family:var(--cc-font-mono);font-size:13px">@clave</td>
                     <td class="num">@m.CostoKg.ToString("N4", Formato.Pe)</td>
                     <td class="num">@m.FactorCO2Kg.ToString("N5", Formato.Pe)</td>
                     <td>

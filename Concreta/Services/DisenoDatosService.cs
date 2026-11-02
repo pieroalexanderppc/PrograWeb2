@@ -84,14 +84,13 @@ namespace Concreta.Services
             return diseno;
         }
 
-        /// <summary>Último ensayo de compresión a 28 días de cada diseño.</summary>
-        public static decimal? Resistencia28d(DisenoMezcla d)
+        public async Task<System.Collections.Generic.Dictionary<int, HistorialCemento>> HistorialCementosAsync()
         {
-            return d.Ensayos
-                .Where(e => e.TipoEnsayo == EnsayoLaboratorio.Compresion && e.EdadDias == 28)
-                .OrderByDescending(e => e.FechaEnsayo)
-                .Select(e => (decimal?)e.ValorObtenido)
-                .FirstOrDefault();
+            var ensayados = await _db.Disenos.ConDetalle()
+                .Where(d => d.Estado != DisenoMezcla.Descartado
+                            && d.Ensayos.Any(e => e.TipoEnsayo == EnsayoLaboratorio.Compresion && e.EdadDias == 28))
+                .ToListAsync();
+            return HistorialCemento.PorCemento(ensayados);
         }
     }
 }

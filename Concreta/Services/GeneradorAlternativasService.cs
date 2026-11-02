@@ -27,6 +27,8 @@ namespace Concreta.Services
         public DisenoAciResultado Resultado { get; set; }
         public decimal Puntaje { get; set; }
         public int Posicion { get; set; }
+        /// <summary>Ensayos reales de este cemento; null si no tiene ninguno.</summary>
+        public HistorialCemento Historial { get; set; }
 
         public string Etiqueta => Cemento.Nombre + (ConAditivo ? " + aditivo" : "");
     }
@@ -94,6 +96,8 @@ namespace Concreta.Services
 
         public GeneradorResultado Generar(GeneradorEntrada e, ParametrosAci parametros)
         {
+            DisenoAciService.ValidarTmnPiedra(e.Piedra, e.TamanoMaxNominal);
+
             var salida = new GeneradorResultado();
             var variantes = new List<Alternativa>();
 

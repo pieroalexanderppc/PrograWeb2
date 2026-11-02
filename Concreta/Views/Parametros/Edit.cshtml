@@ -1,0 +1,115 @@
+﻿@model ParametrosFormVM
+@{
+    ViewBag.Title = "Editar parámetros";
+    ViewBag.Seccion = "Parámetros ACI";
+    ViewBag.SeccionUrl = Url.Action("Index");
+}
+<div class="page-head">
+    <div>
+        <h1>Editar parámetros ACI 211.1</h1>
+        <div class="meta">Los cambios solo afectan a los diseños que se calculen desde ahora.</div>
+    </div>
+</div>
+
+@using (Html.BeginForm("Edit", "Parametros", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(false)
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="section-head"><h2>Agua y aire atrapado</h2></div>
+            <div class="table-wrap">
+                <table class="table-cc">
+                    <thead>
+                        <tr>
+                            <th scope="col">TMN</th>
+                            <th scope="col">Asentamiento</th>
+                            <th scope="col" class="num">Agua<span class="th-unit">L/m³</span></th>
+                            <th scope="col" class="num">Aire<span class="th-unit">%</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.AguaAire.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.HiddenFor(m => m.AguaAire[i].IdParametro)
+                                    @Html.HiddenFor(m => m.AguaAire[i].TamanoMaxNominal)
+                                    @Html.HiddenFor(m => m.AguaAire[i].AsentamientoMin)
+                                    @Html.HiddenFor(m => m.AguaAire[i].AsentamientoMax)
+                                    @Model.AguaAire[i].TamanoMaxNominal
+                                </td>
+                                <td>@Formato.Pulg(Model.AguaAire[i].AsentamientoMin)"–@Formato.Pulg(Model.AguaAire[i].AsentamientoMax)"</td>
+                                <td>@Html.TextBoxFor(m => m.AguaAire[i].AguaLitrosM3, new { @class = "form-control input-num", type = "number", step = "0.1", style = "width:78px;margin-left:auto" })</td>
+                                <td>@Html.TextBoxFor(m => m.AguaAire[i].AireAtrapado, new { @class = "form-control input-num", type = "number", step = "0.01", style = "width:70px;margin-left:auto" })</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="section-head"><h2>Relación a/c</h2></div>
+            <div class="table-wrap">
+                <table class="table-cc">
+                    <thead>
+                        <tr>
+                            <th scope="col">f'cr<span class="th-unit">kg/cm²</span></th>
+                            <th scope="col" class="num">a/c</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.RelacionAC.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.HiddenFor(m => m.RelacionAC[i].IdParametro)
+                                    @Html.HiddenFor(m => m.RelacionAC[i].FcrKgCm2)
+                                    @Model.RelacionAC[i].FcrKgCm2
+                                </td>
+                                <td>@Html.TextBoxFor(m => m.RelacionAC[i].RelacionAC, new { @class = "form-control input-num", type = "number", step = "0.001", style = "width:78px;margin-left:auto" })</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="section-head"><h2>Agregado grueso</h2></div>
+            <div class="table-wrap">
+                <table class="table-cc">
+                    <thead>
+                        <tr>
+                            <th scope="col">TMN</th>
+                            <th scope="col" class="num">MF</th>
+                            <th scope="col" class="num">Volumen<span class="th-unit">m³ por m³</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.AgregadoGrueso.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.HiddenFor(m => m.AgregadoGrueso[i].IdParametro)
+                                    @Html.HiddenFor(m => m.AgregadoGrueso[i].TamanoMaxNominal)
+                                    @Html.HiddenFor(m => m.AgregadoGrueso[i].ModuloFineza)
+                                    @Model.AgregadoGrueso[i].TamanoMaxNominal
+                                </td>
+                                <td class="num">@Model.AgregadoGrueso[i].ModuloFineza.ToString("0.00", Formato.Pe)</td>
+                                <td>@Html.TextBoxFor(m => m.AgregadoGrueso[i].VolumenM3, new { @class = "form-control input-num", type = "number", step = "0.001", style = "width:78px;margin-left:auto" })</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions mt-4">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>Guardar cambios</button>
+        <a class="btn btn-secondary" href="@Url.Action("Index")">Cancelar</a>
+    </div>
+}

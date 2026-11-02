@@ -101,10 +101,18 @@ namespace Concreta.Services
                 throw new DisenoAciException("Selecciona el tamaño máximo nominal (TMN).");
             if (e.Cemento == null || e.Arena == null || e.Piedra == null || e.Agua == null)
                 throw new DisenoAciException("Selecciona el cemento, la arena, la piedra y el agua.");
+            ValidarTmnPiedra(e.Piedra, e.TamanoMaxNominal);
             if (e.Arena.ModuloFineza == null)
                 throw new DisenoAciException("La arena seleccionada no tiene módulo de fineza registrado.");
             if (e.Piedra.PesoUnitarioCompactado == null)
                 throw new DisenoAciException("La piedra seleccionada no tiene peso unitario compactado registrado.");
+        }
+
+        public static void ValidarTmnPiedra(Models.Entities.Material piedra, string tmn)
+        {
+            if (!string.IsNullOrEmpty(piedra?.TamanoMaxNominal) && piedra.TamanoMaxNominal != tmn)
+                throw new DisenoAciException(
+                    $"La piedra seleccionada tiene TMN {piedra.TamanoMaxNominal} y el diseño pide TMN {tmn}. Usa el mismo TMN o elige otra piedra.");
         }
 
         private static Models.Entities.ParametroAguaAire BuscarAguaAire(

@@ -77,8 +77,7 @@
       panel.classList.add('stale');
       var aviso = panel.querySelector('[data-aviso-stale]');
       if (aviso) aviso.hidden = false;
-      var guardar = panel.querySelector('[data-guardar]');
-      if (guardar) guardar.disabled = true;
+      panel.querySelectorAll('[data-guardar]').forEach(function (b) { b.disabled = true; });
     };
     formCalculo.addEventListener('input', marcarDesactualizado);
     formCalculo.addEventListener('change', marcarDesactualizado);

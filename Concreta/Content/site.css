@@ -248,6 +248,7 @@ textarea.form-control { height: auto; }
 
 /* ---------- Tablas ---------- */
 .table-wrap {
+  position: relative; /* contiene los .visually-hidden del encabezado dentro del scroll */
   background: var(--cc-surface); border: var(--cc-border); border-radius: var(--cc-radius);
   overflow-x: auto;
 }
@@ -281,7 +282,9 @@ textarea.form-control { height: auto; }
 .result-panel .table-cc td.num { font-size: 13px; }
 .result-panel .table-cc .sub { max-width: 120px; }
 .table-cc .mix-bar.mix-bar-sm { min-width: 90px; }
-.table-alternativas .col-name { min-width: 180px; }
+.table-alternativas .col-name { min-width: 165px; }
+.table-alternativas .sub { white-space: normal; }
+.table-alternativas .mix-bar.mix-bar-sm { min-width: 80px; }
 .empty { padding: var(--sp-6) var(--sp-4); text-align: center; color: var(--cc-600); }
 .empty .btn { margin-left: 8px; }
 .table-matrix th:first-child, .table-matrix td:first-child { font-weight: 600; color: var(--cc-900); }
@@ -397,6 +400,22 @@ textarea.form-control { height: auto; }
 .login-side p { font-size: 28px; font-weight: 500; line-height: 1.25; max-width: 420px; margin: 0; text-wrap: balance; }
 .demo-users { font-size: 12px; color: var(--cc-500); margin-top: var(--sp-5); padding-top: var(--sp-4); border-top: var(--cc-border); }
 .demo-users code { font-family: var(--cc-font-mono); color: var(--cc-600); }
+
+/* ---------- Reporte imprimible ---------- */
+.reporte { background: #fff; max-width: 900px; margin: 0 auto; padding: var(--sp-6); }
+.reporte-acciones { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-5); }
+.reporte-head {
+  display: flex; justify-content: space-between; gap: var(--sp-5);
+  padding-bottom: var(--sp-4); margin-bottom: var(--sp-4); border-bottom: var(--cc-border);
+}
+.reporte .section { margin-bottom: var(--sp-5); break-inside: avoid; }
+@media print {
+  @page { margin: 14mm; }
+  .reporte { max-width: none; padding: 0; }
+  .reporte-acciones { display: none; }
+  .reporte .table-wrap { overflow: visible; }
+  .mix-bar > span, .mix-legend .sw { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
 
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 

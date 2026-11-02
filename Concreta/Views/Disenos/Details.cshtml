@@ -24,17 +24,35 @@
         @if (Model.PuedeEditar)
         {
             <a class="btn btn-secondary" href="@Url.Action("Create", "Comparaciones", new { ids = d.IdDiseno })"><i class="bi bi-layout-split"></i>Comparar con…</a>
+            <a class="btn btn-secondary" href="@Url.Action("Create", new { desde = d.IdDiseno })"><i class="bi bi-copy"></i>Duplicar</a>
+        }
+        <a class="btn btn-secondary" href="@Url.Action("Reporte", new { id = d.IdDiseno })" target="_blank"><i class="bi bi-file-earmark-text"></i>Reporte</a>
+        @if (Model.PuedeEditar)
+        {
+            var aprobable = Model.PuedeAprobar && d.Estado != DisenoMezcla.Aprobado && d.Estado != DisenoMezcla.Descartado;
+            var cerrado = d.Estado == DisenoMezcla.Aprobado || d.Estado == DisenoMezcla.Descartado;
             <div class="dropdown">
                 <button class="btn btn-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Cambiar estado"><i class="bi bi-three-dots"></i></button>
                 <div class="dropdown-menu dropdown-menu-end">
-                    @foreach (var estado in new[] { DisenoMezcla.Aprobado, DisenoMezcla.Descartado, DisenoMezcla.Calculado })
+                    @using (Html.BeginForm("CambiarEstado", "Disenos", new { id = d.IdDiseno }, FormMethod.Post))
                     {
-                        if (estado == d.Estado) { continue; }
-                        using (Html.BeginForm("CambiarEstado", "Disenos", new { id = d.IdDiseno, estado = estado }, FormMethod.Post))
+                        @Html.AntiForgeryToken()
+                        if (aprobable)
                         {
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="dropdown-item">Marcar como @estado.ToLowerInvariant()</button>
+                            <button type="submit" name="accion" value="aprobar" class="dropdown-item">Aprobar</button>
                         }
+                        if (cerrado)
+                        {
+                            <button type="submit" name="accion" value="reactivar" class="dropdown-item">Reactivar</button>
+                        }
+                        if (d.Estado != DisenoMezcla.Descartado)
+                        {
+                            <button type="submit" name="accion" value="descartar" class="dropdown-item">Descartar</button>
+                        }
+                    }
+                    @if (!Model.PuedeAprobar)
+                    {
+                        <span class="dropdown-item-text text-muted" style="font-size:12px">Aprobar requiere alcanzar f'c a 28 días.</span>
                     }
                 </div>
             </div>
@@ -64,11 +82,16 @@
 </div>
 
 <div class="section">
+    <div class="section-head"><h2>Pesos de obra por m³</h2></div>
+    @Html.Partial("_PesosObra", Model.Dosificacion)
+</div>
+
+<div class="section">
     <div class="section-head">
         <h2>Ensayos de laboratorio</h2>
         @if (Model.Resistencia28d != null)
         {
-            <span class="meta">Resistencia a 28 días: @Html.Num(Formato.Kg(Model.Resistencia28d), "kg/cm²") (@Formato.Pct(Model.Resistencia28d / d.FcKgCm2 * 100m) % de f'c)</span>
+            <span class="meta">Promedio a 28 días: @Html.Num(Formato.Kg(Model.Resistencia28d), "kg/cm²") (@Formato.Pct(Model.Resistencia28d / d.FcKgCm2 * 100m) % de f'c)</span>
         }
     </div>
     <div class="table-wrap">
@@ -82,13 +105,17 @@
                     <th scope="col" class="num">% de f'c</th>
                     <th scope="col">Resultado</th>
                     <th scope="col">Registrado por</th>
+                    @if (Model.PuedeRegistrarEnsayo)
+                    {
+                        <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                    }
                 </tr>
             </thead>
             <tbody>
                 @if (!ensayos.Any())
                 {
                     <tr>
-                        <td colspan="7" class="empty">
+                        <td colspan="8" class="empty">
                             Aún no hay ensayos para este diseño.
                             @if (Model.PuedeRegistrarEnsayo) {<button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEnsayo">Registrar ensayo</button>}
                         </td>
@@ -106,7 +133,7 @@
                         <td>
                             @if (esCompresion && e.EdadDias == 28)
                             {
-                                @Html.Partial("_ResistenciaBadge", e.ValorObtenido >= d.FcKgCm2 ? EstadoResistencia.Cumple : EstadoResistencia.NoCumple)
+                                @Html.Partial("_ResistenciaBadge", RecomendacionService.EvaluarResistencia(d.FcKgCm2, e.ValorObtenido))
                             }
                             else
                             {
@@ -114,16 +141,28 @@
                             }
                         </td>
                         <td>@e.Usuario.NombreCompleto</td>
+                        @if (Model.PuedeRegistrarEnsayo)
+                        {
+                            <td class="row-actions">
+                                <a class="btn btn-ghost" href="@Url.Action("Edit", "Ensayos", new { id = e.IdEnsayo })"><i class="bi bi-pencil"></i>Editar</a>
+                                <button type="button" class="btn btn-ghost btn-danger-outline" data-bs-toggle="modal" data-bs-target="#modalConfirmar"
+                                        data-accion="@Url.Action("Delete", "Ensayos", new { id = e.IdEnsayo })"
+                                        data-confirmar="¿Eliminar este ensayo de @Formato.Fecha(e.FechaEnsayo)? Esta acción no se puede deshacer.">
+                                    <i class="bi bi-trash3"></i>Eliminar
+                                </button>
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-    <div class="help mt-2">El diseño cumple si el ensayo de compresión a 28 días alcanza f'c = @d.FcKgCm2 kg/cm².</div>
+    <div class="help mt-2">El diseño cumple si el promedio de las probetas de compresión a 28 días alcanza f'c = @d.FcKgCm2 kg/cm².</div>
 </div>
 
 @if (Model.PuedeRegistrarEnsayo)
 {
+    @Html.Partial("_ConfirmarEliminar")
     <div class="modal fade" id="modalEnsayo" tabindex="-1" aria-labelledby="modalEnsayoTitulo" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             @using (Html.BeginForm("Create", "Ensayos", FormMethod.Post, new { @class = "modal-content" }))

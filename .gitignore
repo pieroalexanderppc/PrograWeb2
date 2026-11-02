@@ -10,3 +10,6 @@ TestResults/
 
 # Paquetes NuGet (se restauran con "Restaurar paquetes NuGet")
 packages/
+
+# Permisos locales de Claude Code
+.claude/

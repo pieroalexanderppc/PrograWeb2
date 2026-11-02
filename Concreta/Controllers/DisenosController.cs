@@ -30,10 +30,19 @@ namespace Concreta.Controllers
         }
 
         [Autorizar(RolNombre.AdminIngeniero)]
-        public async Task<ActionResult> Create(int? idProyecto)
+        public async Task<ActionResult> Create(int? idProyecto, int? desde)
         {
             var vm = new DisenoFormVM { IdProyecto = idProyecto };
             await LlenarListas(vm);
+
+            if (desde != null)
+            {
+                var origen = await Db.Disenos.ConDetalle().FirstOrDefaultAsync(x => x.IdDiseno == desde);
+                if (origen == null) return HttpNotFound();
+                Copiar(origen, vm);
+                return View(vm);
+            }
+
             // Valores iniciales: el primer material activo de cada tipo.
             vm.IdCemento = vm.Cementos.Select(m => (int?)m.IdMaterial).FirstOrDefault();
             vm.IdArena = vm.Arenas.Select(m => (int?)m.IdMaterial).FirstOrDefault();
@@ -63,11 +72,13 @@ namespace Concreta.Controllers
                 return View(vm);
             }
 
-            if (accion == "guardar")
+            if (accion == "guardar" || accion == "guardar_comparar")
             {
                 var datos = new DisenoDatosService(Db);
                 var diseno = await datos.GuardarAsync(resultado, vm.IdProyecto.Value, IdUsuarioActual, vm.Descripcion);
                 Exito("Diseño " + diseno.Codigo + " guardado");
+                if (accion == "guardar_comparar")
+                    return RedirectToAction("Create", "Comparaciones", new { ids = diseno.IdDiseno });
                 return RedirectToAction("Details", new { id = diseno.IdDiseno });
             }
 
@@ -89,9 +100,10 @@ namespace Concreta.Controllers
             {
                 Diseno = d,
                 Dosificacion = DisenoConsultas.Dosificacion(d),
-                Resistencia28d = DisenoDatosService.Resistencia28d(d),
+                Resistencia28d = DisenoEstados.Resistencia28d(d),
                 PuedeRegistrarEnsayo = User.IsInRole(RolNombre.Administrador) || User.IsInRole(RolNombre.Laboratorista),
                 PuedeEditar = User.IsInRole(RolNombre.Administrador) || User.IsInRole(RolNombre.Ingeniero),
+                PuedeAprobar = DisenoEstados.PuedeAprobar(d),
                 NuevoEnsayo = new EnsayoFormVM { IdDiseno = d.IdDiseno, CodigoDiseno = d.Codigo }
             };
             vm.EstadoResistencia = RecomendacionService.EvaluarResistencia(d.FcKgCm2, vm.Resistencia28d);
@@ -107,17 +119,75 @@ namespace Concreta.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Autorizar(RolNombre.AdminIngeniero)]
-        public async Task<ActionResult> CambiarEstado(int id, string estado)
+        public async Task<ActionResult> CambiarEstado(int id, string accion)
         {
-            var permitidos = new[] { DisenoMezcla.Aprobado, DisenoMezcla.Descartado, DisenoMezcla.Calculado };
-            var d = await Db.Disenos.FindAsync(id);
+            var d = await Db.Disenos.Include(x => x.Ensayos).FirstOrDefaultAsync(x => x.IdDiseno == id);
             if (d == null) return HttpNotFound();
-            if (!permitidos.Contains(estado)) return new HttpStatusCodeResult(400);
 
-            d.Estado = estado;
+            switch (accion)
+            {
+                case "aprobar":
+                    if (!DisenoEstados.PuedeAprobar(d))
+                    {
+                        Error("Solo se aprueba un diseño cuyo ensayo a 28 días alcance f'c.");
+                        return RedirectToAction("Details", new { id });
+                    }
+                    d.Estado = DisenoMezcla.Aprobado;
+                    break;
+                case "descartar":
+                    d.Estado = DisenoMezcla.Descartado;
+                    break;
+                case "reactivar":
+                    d.Estado = DisenoEstados.EstadoBase(d);
+                    break;
+                default:
+                    return new HttpStatusCodeResult(400);
+            }
+
             await Db.SaveChangesAsync();
-            Exito("Diseño " + d.Codigo + " marcado como " + estado.ToLowerInvariant());
+            Exito("Diseño " + d.Codigo + ": estado " + d.Estado.ToLowerInvariant());
             return RedirectToAction("Details", new { id });
+        }
+
+        /// <summary>Hoja imprimible; el navegador la guarda como PDF.</summary>
+        public async Task<ActionResult> Reporte(int id)
+        {
+            var d = await Db.Disenos.ConDetalle()
+                .Include(x => x.Usuario)
+                .FirstOrDefaultAsync(x => x.IdDiseno == id);
+            if (d == null) return HttpNotFound();
+
+            return View(new DisenoDetalleVM
+            {
+                Diseno = d,
+                Dosificacion = DisenoConsultas.Dosificacion(d),
+                Resistencia28d = DisenoEstados.Resistencia28d(d),
+                EstadoResistencia = DisenoEstados.Resistencia(d)
+            });
+        }
+
+        private static void Copiar(DisenoMezcla d, DisenoFormVM vm)
+        {
+            vm.IdProyecto = d.IdProyecto;
+            vm.Descripcion = "Copia de " + d.Codigo;
+            vm.FcKgCm2 = d.FcKgCm2;
+            vm.AsentamientoPulg = d.AsentamientoPulg;
+            vm.TamanoMaxNominal = d.TamanoMaxNominal;
+
+            foreach (var det in d.Detalles)
+            {
+                switch (det.Material.TipoMaterial.Nombre)
+                {
+                    case TipoMaterial.Cemento: vm.IdCemento = det.IdMaterial; break;
+                    case TipoMaterial.AgregadoFino: vm.IdArena = det.IdMaterial; break;
+                    case TipoMaterial.AgregadoGrueso: vm.IdPiedra = det.IdMaterial; break;
+                    case TipoMaterial.Agua: vm.IdAgua = det.IdMaterial; break;
+                    case TipoMaterial.Aditivo:
+                        vm.IdAditivo = det.IdMaterial;
+                        vm.AditivoDosisKg = det.CantidadKgM3;
+                        break;
+                }
+            }
         }
 
         private async Task<DisenoAciResultado> Calcular(DisenoFormVM vm)
@@ -132,7 +202,8 @@ namespace Concreta.Controllers
                 Piedra = Buscar(vm.Piedras, vm.IdPiedra),
                 Agua = Buscar(vm.Aguas, vm.IdAgua),
                 Aditivo = Buscar(vm.Aditivos, vm.IdAditivo),
-                AditivoDosisKg = vm.IdAditivo != null ? vm.AditivoDosisKg : null
+                AditivoDosisKg = vm.IdAditivo != null ? vm.AditivoDosisKg : null,
+                ReduccionAguaPct = vm.IdAditivo != null ? vm.ReduccionAguaPct ?? 0m : 0m
             };
 
             var parametros = await new DisenoDatosService(Db).CargarParametrosAsync();

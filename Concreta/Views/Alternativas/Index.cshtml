@@ -83,6 +83,14 @@
                     <div class="eyebrow" style="color:var(--cc-brand)">Mejor alternativa · criterio @Criterio.Etiqueta(Model.Criterio)</div>
                     <div class="reco-code" style="font-family:var(--cc-font-sans);font-size:20px">@mejor.Etiqueta</div>
                     <p class="reco-text">@res.Justificacion</p>
+                    @if (mejor.Historial == null)
+                    {
+                        <p class="reco-text mt-2"><i class="bi bi-exclamation-triangle me-1"></i>Este cemento aún no tiene ensayos a 28 días en Concreta: el resultado asume que alcanza f'c, sin datos que lo respalden.</p>
+                    }
+                    else
+                    {
+                        <p class="reco-text mt-2">Historial de este cemento: @Formato.Pct(mejor.Historial.PctFcPromedio) % de f'c en promedio, en @mejor.Historial.Disenos diseño@(mejor.Historial.Disenos == 1 ? "" : "s") ensayado@(mejor.Historial.Disenos == 1 ? "" : "s").</p>
+                    }
                     <div class="d-flex flex-wrap gap-4 mt-3">
                         <span>@Html.Num(Formato.Kg(mejor.Resultado.CementoKg), "kg cemento/m³")</span>
                         <span>@Html.Num(Formato.Soles(mejor.Resultado.CostoTotalM3), "/m³", "S/")</span>
@@ -126,12 +134,11 @@
                     <tr>
                         <th scope="col" class="num">#</th>
                         <th scope="col">Cemento</th>
-                        <th scope="col" class="num">Adición<span class="th-unit">%</span></th>
-                        <th scope="col">Aditivo</th>
                         <th scope="col" class="num">Cemento<span class="th-unit">kg/m³</span></th>
                         <th scope="col" class="num">Costo<span class="th-unit">S/ por m³</span></th>
                         <th scope="col" class="num">CO₂<span class="th-unit">kg CO₂e/m³</span></th>
                         <th scope="col">Composición</th>
+                        <th scope="col" class="num">Historial<span class="th-unit">% de f'c a 28 d</span></th>
                         <th scope="col" class="num">Puntaje</th>
                         <th scope="col"><span class="visually-hidden">Acciones</span></th>
                     </tr>
@@ -142,13 +149,15 @@
                         var barra = DosificacionVM.Desde(a.Resultado.Lineas, a.Resultado.AireAtrapadoPct).SoloBarra();
                         <tr class="@(a == mejor ? "row-winner" : "")">
                             <td class="num">@a.Posicion</td>
-                            <td class="col-name" style="font-weight:@(a == mejor ? "600" : "400")">@a.Cemento.Nombre</td>
-                            <td class="num">@Formato.Pct(a.Cemento.PorcentajeAdicion ?? 0m)</td>
-                            <td style="white-space:nowrap">@(a.ConAditivo ? "1 % cem." : "—")</td>
+                            <td class="col-name">
+                                <div style="font-weight:@(a == mejor ? "600" : "400")">@a.Cemento.Nombre</div>
+                                <div class="sub">Adición @Formato.Pct(a.Cemento.PorcentajeAdicion ?? 0m) % · @(a.ConAditivo ? "aditivo al 1 % del cemento" : "sin aditivo")</div>
+                            </td>
                             <td class="num">@Formato.Kg(a.Resultado.CementoKg)</td>
                             <td class="num">@Formato.Soles(a.Resultado.CostoTotalM3)</td>
                             <td class="num">@Formato.CO2(a.Resultado.HuellaCO2M3)</td>
                             <td>@Html.Partial("_MixBar", barra)</td>
+                            <td class="num" title="@(a.Historial != null ? a.Historial.Disenos + " diseño(s) ensayado(s), mínimo " + Formato.Pct(a.Historial.PctFcMinimo) + " %" : "Sin ensayos de este cemento")">@(a.Historial != null ? Formato.Pct(a.Historial.PctFcPromedio) : "Sin datos")</td>
                             <td class="num">@Formato.Pct(a.Puntaje)</td>
                             <td class="row-actions">
                                 <button type="submit" name="Seleccion" value="@(a.Cemento.IdMaterial)-@(a.ConAditivo ? 1 : 0)" class="btn btn-ghost"

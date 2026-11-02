@@ -53,7 +53,7 @@ namespace Concreta.Controllers
                 FcKgCm2 = d.FcKgCm2,
                 Costo = d.CostoTotalM3 ?? 0m,
                 CO2 = d.HuellaCO2M3 ?? 0m,
-                Resistencia28d = DisenoDatosService.Resistencia28d(d)
+                Resistencia28d = DisenoEstados.Resistencia28d(d)
             }).ToList();
 
             var resultado = _recomendacion.Recomendar(candidatos, vm.Criterio);
@@ -103,7 +103,7 @@ namespace Concreta.Controllers
                 var d = disenos.First(x => x.IdDiseno == det.IdDiseno);
                 var dosificacion = DisenoConsultas.Dosificacion(d);
                 var cemento = dosificacion.Lineas.FirstOrDefault(l => l.Tipo == TipoLinea.Cemento);
-                var r28 = DisenoDatosService.Resistencia28d(d);
+                var r28 = DisenoEstados.Resistencia28d(d);
                 vm.Columnas.Add(new ColumnaComparacion
                 {
                     Diseno = d,

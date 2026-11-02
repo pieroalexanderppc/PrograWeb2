@@ -1,0 +1,31 @@
+﻿@model DosificacionVM
+@if (Model.PesosObra == null)
+{
+    <p class="help">Para ver los pesos de obra, registra la humedad y la absorción de la arena y la piedra en Materiales.</p>
+}
+else
+{
+    <div class="table-wrap">
+        <table class="table-cc">
+            <thead>
+                <tr>
+                    <th scope="col">Material</th>
+                    <th scope="col" class="num">Seco<span class="th-unit">kg/m³</span></th>
+                    <th scope="col" class="num">En obra<span class="th-unit">kg/m³</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var l in Model.PesosObra.Lineas)
+                {
+                    bool aditivo = l.Tipo == TipoLinea.Aditivo;
+                    <tr>
+                        <td><div>@l.Tipo</div><div class="sub" title="@l.Material">@l.Material</div></td>
+                        <td class="num">@(aditivo ? Formato.Soles(l.SecoKg) : Formato.Kg(l.SecoKg))</td>
+                        <td class="num">@(aditivo ? Formato.Soles(l.ObraKg) : Formato.Kg(l.ObraKg))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="help mt-2">Humedad y absorción del catálogo. Los agregados aportan @Formato.Pct(Model.PesosObra.AporteAguaLitros) L/m³ de agua libre. Costo y CO₂ se calculan con los pesos secos.</div>
+}

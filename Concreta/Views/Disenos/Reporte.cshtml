@@ -1,0 +1,95 @@
+﻿@model DisenoDetalleVM
+@{
+    Layout = null;
+    var d = Model.Diseno;
+    var ensayos = d.Ensayos.OrderBy(e => e.FechaEnsayo).ThenBy(e => e.EdadDias).ToList();
+    var kpis = new List<KpiVM>
+    {
+        new KpiVM("f'cr", (d.FcrKgCm2?.ToString() ?? "—"), "kg/cm²"),
+        new KpiVM("Relación a/c", Formato.AC(d.RelacionAC)),
+        new KpiVM("Costo", Formato.Soles(d.CostoTotalM3), "/m³", "S/"),
+        new KpiVM("Huella CO₂", Formato.CO2(d.HuellaCO2M3), "kg CO₂e/m³")
+    };
+}
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@d.Codigo · Concreta</title>
+    @Html.Partial("_Estilos")
+</head>
+<body class="reporte">
+    <div class="reporte-acciones">
+        <button type="button" class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer"></i>Imprimir o guardar PDF</button>
+        <a class="btn btn-secondary" href="@Url.Action("Details", new { id = d.IdDiseno })">Volver al diseño</a>
+    </div>
+
+    <header class="reporte-head">
+        <div>
+            <div class="brand" style="padding:0;border:0;height:auto"><span class="brand-mark"></span>CONCRETA</div>
+            <h1 class="mt-3" style="font-family:var(--cc-font-mono)">@d.Codigo</h1>
+            <div class="meta">Reporte de diseño de mezcla · @d.MetodoDiseno</div>
+        </div>
+        <dl class="dl-cc">
+            <dt>Proyecto</dt><dd>@d.Proyecto.Nombre</dd>
+            <dt>Requisitos</dt><dd>f'c @d.FcKgCm2 kg/cm² · asentamiento @Formato.Pulg(d.AsentamientoPulg)" · TMN @d.TamanoMaxNominal</dd>
+            <dt>Estado</dt><dd>@d.Estado · @(Model.Resistencia28d != null ? Formato.Kg(Model.Resistencia28d) + " kg/cm² a 28 días" : "sin ensayo a 28 días")</dd>
+            <dt>Responsable</dt><dd>@d.Usuario.NombreCompleto · @Formato.Fecha(d.FechaCreacion)</dd>
+        </dl>
+    </header>
+
+    <div class="section">@Html.Partial("_KpiStrip", kpis, new ViewDataDictionary { { "Clase", "compact" } })</div>
+
+    <div class="section">
+        <h2 class="mb-2">Composición del m³</h2>
+        @Html.Partial("_MixBar", Model.Dosificacion)
+    </div>
+
+    <div class="section">
+        <h2 class="mb-2">Dosificación por m³ (pesos secos)</h2>
+        @Html.Partial("_Dosificacion", Model.Dosificacion)
+    </div>
+
+    <div class="section">
+        <h2 class="mb-2">Pesos de obra por m³</h2>
+        @Html.Partial("_PesosObra", Model.Dosificacion)
+    </div>
+
+    <div class="section">
+        <h2 class="mb-2">Ensayos de laboratorio</h2>
+        @if (!ensayos.Any())
+        {
+            <p class="meta">Aún no hay ensayos para este diseño.</p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="table-cc">
+                    <thead>
+                        <tr>
+                            <th scope="col">Fecha</th>
+                            <th scope="col" class="num">Edad<span class="th-unit">días</span></th>
+                            <th scope="col">Tipo</th>
+                            <th scope="col" class="num">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in ensayos)
+                        {
+                            <tr>
+                                <td>@Formato.Fecha(e.FechaEnsayo)</td>
+                                <td class="num">@(e.EdadDias?.ToString() ?? "—")</td>
+                                <td>@Opciones.EtiquetaTipoEnsayo(e.TipoEnsayo)</td>
+                                <td class="num">@e.ValorObtenido.ToString("N1", Formato.Pe)<span class="unit">@e.Unidad.Replace("2", "²").Replace("m3", "m³")</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <footer class="help">Costos y factores de CO₂ referenciales del prototipo: reemplázalos por las fichas técnicas del proveedor antes de usar este reporte en obra.</footer>
+</body>
+</html>

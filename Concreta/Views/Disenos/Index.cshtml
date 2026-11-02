@@ -44,7 +44,6 @@
         <thead>
             <tr>
                 <th scope="col">Código</th>
-                <th scope="col">Proyecto</th>
                 <th scope="col" class="num">f'c<span class="th-unit">kg/cm²</span></th>
                 <th scope="col">Cemento</th>
                 <th scope="col" class="num">Cemento<span class="th-unit">kg/m³</span></th>
@@ -52,14 +51,13 @@
                 <th scope="col" class="num">CO₂<span class="th-unit">kg CO₂e/m³</span></th>
                 <th scope="col">28 días</th>
                 <th scope="col">Estado</th>
-                <th scope="col"><span class="visually-hidden">Acciones</span></th>
             </tr>
         </thead>
         <tbody>
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="10" class="empty">
+                    <td colspan="8" class="empty">
                         Aún no hay diseños@(proyectoSel != null ? " en este proyecto" : "").
                         @if (disena) {<a class="btn btn-primary btn-sm" href="@Url.Action("Create", new { idProyecto = proyectoSel })">Crear diseño</a>}
                     </td>
@@ -68,8 +66,10 @@
             @foreach (var d in Model)
             {
                 <tr>
-                    <td><a class="code-link" href="@Url.Action("Details", new { id = d.IdDiseno })">@d.Codigo</a></td>
-                    <td class="text-truncate" style="max-width:220px">@d.Proyecto</td>
+                    <td>
+                        <a class="code-link" href="@Url.Action("Details", new { id = d.IdDiseno })">@d.Codigo</a>
+                        <div class="sub" style="max-width:190px" title="@d.Proyecto">@d.Proyecto</div>
+                    </td>
                     <td class="num">@d.FcKgCm2</td>
                     <td class="text-truncate" style="max-width:220px">@d.Cemento</td>
                     <td class="num">@Formato.Kg(d.CementoKg)</td>
@@ -77,9 +77,6 @@
                     <td class="num">@Formato.CO2(d.CO2)</td>
                     <td>@Html.Partial("_ResistenciaBadge", RecomendacionService.EvaluarResistencia(d.FcKgCm2, d.Resistencia28d))</td>
                     <td>@Html.Partial("_EstadoBadge", d.Estado)</td>
-                    <td class="row-actions">
-                        <a class="btn btn-ghost" href="@Url.Action("Details", new { id = d.IdDiseno })"><i class="bi bi-eye"></i>Ver</a>
-                    </td>
                 </tr>
             }
         </tbody>

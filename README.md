@@ -27,7 +27,8 @@ Todos usan la contraseña **`Concreta123*`**.
 - **Visual Studio 2022 o 2026** con la carga de trabajo **"Desarrollo de ASP.NET y web"** (incluye .NET Framework 4.7.2 e IIS Express).
 - **SQL Server** 2019 o 2022, en edición Express o Developer (ambas son gratuitas).
 - **SQL Server Management Studio (SSMS)** o `sqlcmd`, para ejecutar el script.
-- **Internet** al ejecutar la app: Bootstrap, los íconos, jQuery y las fuentes se cargan desde CDN.
+
+La app **no necesita internet**: Bootstrap, los íconos, jQuery y las fuentes están en el proyecto.
 
 ---
 
@@ -63,6 +64,8 @@ sqlcmd -S localhost -E -d ConcretaDB -Q "SELECT Codigo, CostoTotalM3, HuellaCO2M
 ```
 
 Debe mostrar `DM-2026-0001` (339.85 / 341.66) y `DM-2026-0002` (323.73 / 242.41).
+
+> Si actualizas el código con `git pull`, reinstala la base: el script incluye cambios en la vista, los puntajes y los estados de los datos de ejemplo.
 
 ---
 
@@ -130,8 +133,6 @@ dotnet test Concreta.Tests\bin\Debug\net472\Concreta.Tests.dll
 ```
 Concreta/                          ← raíz del repositorio
 ├─ README.md                       ← este archivo
-├─ CLAUDE.md                       ← reglas del proyecto y lógica de dominio (fórmulas ACI, puntaje)
-├─ DESIGN.md                       ← sistema de diseño (colores, tipografía, componentes)
 ├─ Concreta.slnx                   ← solución de Visual Studio
 ├─ database/
 │  └─ ConcretaDB.sql               ← crea la base, tablas, procedimiento, vista y datos de ejemplo
@@ -150,8 +151,8 @@ Concreta/                          ← raíz del repositorio
 │  │    └─ GeneradorAlternativasService  optimizador: una variante por cemento, con y sin aditivo
 │  ├─ ViewModels/                  ← modelos de los formularios, con validaciones en español
 │  ├─ Views/                       ← vistas Razor (Shared/ tiene el layout y los componentes)
-│  ├─ Content/site.css             ← estilos según DESIGN.md
-│  ├─ Scripts/concreta.js          ← interacciones mínimas (toasts, modales, campos condicionales)
+│  ├─ Content/                     ← site.css (estilos) y lib/ (Bootstrap, íconos, fuentes)
+│  ├─ Scripts/                     ← concreta.js (interacciones mínimas) y lib/ (jQuery, Bootstrap)
 │  └─ Web.config                   ← cadena de conexión y configuración
 └─ Concreta.Tests/                 ← pruebas unitarias (MSTest) de los servicios
 ```
@@ -178,4 +179,4 @@ Además incluye el procedimiento `sp_CalcularTotalesDiseno` y la vista `vw_Resum
 | *"Cannot open database ConcretaDB"* | Falta ejecutar el script (sección 3). |
 | El login dice que la contraseña no es correcta | Se reinstaló la base con la app abierta. Detén la app y vuelve a ejecutarla. |
 | Las tildes salen como "DiseÃ±os" | Un archivo se guardó sin BOM. Guárdalo con *Archivo → Guardar con codificación → UTF-8 con firma*. |
-| La página sale sin estilos | No hay internet: los estilos se cargan desde CDN. |
+| Los íconos salen como cuadrados | Falta el tipo `.woff2` en el servidor; revisa la sección `staticContent` de `Web.config`. |
