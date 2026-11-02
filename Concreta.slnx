@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Concreta/Concreta.csproj" Id="8d667f3b-3dcb-423a-b949-9e94566f24ed" />
+  <Project Path="Concreta.Tests/Concreta.Tests.csproj" />
+</Solution>

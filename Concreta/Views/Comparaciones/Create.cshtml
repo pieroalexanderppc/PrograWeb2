@@ -1,0 +1,77 @@
+﻿@model ComparacionFormVM
+@{
+    ViewBag.Title = "Nueva comparación";
+    ViewBag.Seccion = "Comparar";
+    ViewBag.SeccionUrl = Url.Action("Index");
+}
+<div class="page-head">
+    <div>
+        <h1>Comparar diseños</h1>
+        <div class="meta">Elige de 2 a 4 diseños calculados y el criterio de recomendación.</div>
+    </div>
+</div>
+
+@using (Html.BeginForm("Create", "Comparaciones", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(false)
+
+    <div class="d-flex flex-wrap gap-4 align-items-end mb-4">
+        <div>
+            <div class="form-label">Criterio</div>
+            <div class="segmented" role="group" aria-label="Criterio de recomendación">
+                @foreach (var c in Criterio.Todos)
+                {
+                    <input type="radio" class="btn-check" name="Criterio" id="crit-@c" value="@c" autocomplete="off" checked="@(Model.Criterio == c)">
+                    <label class="btn" for="crit-@c">@Criterio.Etiqueta(c)</label>
+                }
+            </div>
+        </div>
+        <div style="flex:1;min-width:240px;max-width:420px">
+            @Html.LabelFor(m => m.Nombre, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control", placeholder = "Opcional: se usan los códigos de los diseños" })
+        </div>
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <span class="meta" id="contadorSel"></span>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-layout-split"></i>Comparar</button>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table class="table-cc">
+            <thead>
+                <tr>
+                    <th scope="col"><span class="visually-hidden">Seleccionar</span></th>
+                    <th scope="col">Código</th>
+                    <th scope="col">Proyecto</th>
+                    <th scope="col" class="num">f'c<span class="th-unit">kg/cm²</span></th>
+                    <th scope="col">Cemento</th>
+                    <th scope="col" class="num">Costo<span class="th-unit">S/ por m³</span></th>
+                    <th scope="col" class="num">CO₂<span class="th-unit">kg CO₂e/m³</span></th>
+                    <th scope="col">28 días</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Disenos.Any())
+                {
+                    <tr><td colspan="8" class="empty">No hay diseños calculados para comparar.<a class="btn btn-primary btn-sm" href="@Url.Action("Create", "Disenos")">Crear diseño</a></td></tr>
+                }
+                @foreach (var d in Model.Disenos)
+                {
+                    string idCheck = "sel-" + d.IdDiseno;
+                    <tr class="check-row">
+                        <td><input class="form-check-input" type="checkbox" name="IdsDisenos" value="@d.IdDiseno" id="@idCheck" data-max-sel="4" checked="@Model.IdsDisenos.Contains(d.IdDiseno)" /></td>
+                        <td><label for="@idCheck" class="code-link" style="cursor:pointer">@d.Codigo</label></td>
+                        <td class="text-truncate" style="max-width:220px">@d.Proyecto</td>
+                        <td class="num">@d.FcKgCm2</td>
+                        <td class="text-truncate" style="max-width:240px">@d.Cemento</td>
+                        <td class="num">@Formato.Soles(d.Costo)</td>
+                        <td class="num">@Formato.CO2(d.CO2)</td>
+                        <td>@Html.Partial("_ResistenciaBadge", RecomendacionService.EvaluarResistencia(d.FcKgCm2, d.Resistencia28d))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="help mt-2">Los diseños sin ensayo a 28 días participan con una penalización de 15 puntos; los que no alcanzan f'c quedan fuera de la recomendación.</div>
+}

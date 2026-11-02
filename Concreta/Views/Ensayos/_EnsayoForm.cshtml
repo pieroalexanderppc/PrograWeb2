@@ -1,0 +1,40 @@
+﻿@model EnsayoFormVM
+@Html.AntiForgeryToken()
+@Html.HiddenFor(m => m.IdDiseno)
+@Html.ValidationSummary(true)
+<div class="row g-3">
+    <div class="col-sm-6">
+        @Html.LabelFor(m => m.TipoEnsayo, new { @class = "form-label" })
+        @Html.DropDownListFor(m => m.TipoEnsayo,
+            new SelectList(Opciones.TiposEnsayo.Select(t => new { Valor = t, Texto = Opciones.EtiquetaTipoEnsayo(t) }), "Valor", "Texto", Model.TipoEnsayo),
+            new { @class = "form-select" })
+        @Html.ValidationMessageFor(m => m.TipoEnsayo)
+    </div>
+    <div class="col-sm-6">
+        @Html.LabelFor(m => m.EdadDias, new { @class = "form-label" })
+        <div class="input-group">
+            @Html.DropDownListFor(m => m.EdadDias, new SelectList(Opciones.Edades, Model.EdadDias), "—", new { @class = "form-select" })
+            <span class="input-group-text">días</span>
+        </div>
+        @Html.ValidationMessageFor(m => m.EdadDias)
+    </div>
+    <div class="col-sm-6">
+        @Html.LabelFor(m => m.ValorObtenido, new { @class = "form-label" })
+        <div class="input-group">
+            @Html.TextBoxFor(m => m.ValorObtenido, new { @class = "form-control input-num", type = "number", step = "0.1" })
+            <span class="input-group-text">kg/cm²</span>
+        </div>
+        <div class="help">Compresión en kg/cm². Asentamiento en pulg, temperatura en °C, peso unitario en kg/m³.</div>
+        @Html.ValidationMessageFor(m => m.ValorObtenido)
+    </div>
+    <div class="col-sm-6">
+        @Html.LabelFor(m => m.FechaEnsayo, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.FechaEnsayo, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(m => m.FechaEnsayo)
+    </div>
+    <div class="col-12">
+        @Html.LabelFor(m => m.Observaciones, new { @class = "form-label" })
+        @Html.TextAreaFor(m => m.Observaciones, 2, 0, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Observaciones)
+    </div>
+</div>

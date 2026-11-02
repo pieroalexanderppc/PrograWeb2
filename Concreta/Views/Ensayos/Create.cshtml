@@ -1,0 +1,22 @@
+﻿@model EnsayoFormVM
+@{
+    ViewBag.Title = "Registrar ensayo";
+    ViewBag.Seccion = Model.CodigoDiseno;
+    ViewBag.SeccionUrl = Url.Action("Details", "Disenos", new { id = Model.IdDiseno });
+}
+<div class="page-head">
+    <div>
+        <h1>Registrar ensayo</h1>
+        <div class="meta">Diseño <span class="code">@Model.CodigoDiseno</span></div>
+    </div>
+</div>
+<div style="max-width:640px">
+    @using (Html.BeginForm("Create", "Ensayos", FormMethod.Post))
+    {
+        @Html.Partial("_EnsayoForm", Model)
+        <div class="form-actions mt-4">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>Guardar ensayo</button>
+            <a class="btn btn-secondary" href="@Url.Action("Details", "Disenos", new { id = Model.IdDiseno })">Cancelar</a>
+        </div>
+    }
+</div>

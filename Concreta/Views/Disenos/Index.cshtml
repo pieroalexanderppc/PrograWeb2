@@ -1,0 +1,87 @@
+﻿@model List<DisenoFilaVM>
+@{
+    ViewBag.Title = "Diseños";
+    var proyectos = (List<Proyecto>)ViewBag.Proyectos;
+    int? proyectoSel = ViewBag.Proyecto;
+    string estadoSel = ViewBag.Estado;
+    bool disena = User.IsInRole(RolNombre.Administrador) || User.IsInRole(RolNombre.Ingeniero);
+    var estados = new[] { DisenoMezcla.Borrador, DisenoMezcla.Calculado, DisenoMezcla.Ensayado, DisenoMezcla.Aprobado, DisenoMezcla.Descartado };
+}
+<div class="page-head">
+    <div>
+        <h1>Diseños de mezcla</h1>
+        <div class="meta">@Model.Count diseño@(Model.Count == 1 ? "" : "s") · dosificación ACI 211.1 con costo y huella de carbono</div>
+    </div>
+    @if (disena)
+    {
+        <div class="page-actions">
+            <a class="btn btn-secondary" href="@Url.Action("Create", "Comparaciones")"><i class="bi bi-layout-split"></i>Comparar</a>
+            <a class="btn btn-primary" href="@Url.Action("Create", new { idProyecto = proyectoSel })"><i class="bi bi-plus-lg"></i>Nuevo diseño</a>
+        </div>
+    }
+</div>
+
+<form method="get" class="d-flex flex-wrap gap-2 mb-3">
+    <select name="proyecto" class="form-select" style="max-width:320px" aria-label="Filtrar por proyecto" onchange="this.form.submit()">
+        <option value="">Todos los proyectos</option>
+        @foreach (var p in proyectos)
+        {
+            <option value="@p.IdProyecto" selected="@(proyectoSel == p.IdProyecto)">@p.Nombre</option>
+        }
+    </select>
+    <select name="estado" class="form-select" style="max-width:200px" aria-label="Filtrar por estado" onchange="this.form.submit()">
+        <option value="">Todos los estados</option>
+        @foreach (var e in estados)
+        {
+            <option value="@e" selected="@(estadoSel == e)">@e</option>
+        }
+    </select>
+    <noscript><button type="submit" class="btn btn-secondary">Filtrar</button></noscript>
+</form>
+
+<div class="table-wrap">
+    <table class="table-cc">
+        <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Proyecto</th>
+                <th scope="col" class="num">f'c<span class="th-unit">kg/cm²</span></th>
+                <th scope="col">Cemento</th>
+                <th scope="col" class="num">Cemento<span class="th-unit">kg/m³</span></th>
+                <th scope="col" class="num">Costo<span class="th-unit">S/ por m³</span></th>
+                <th scope="col" class="num">CO₂<span class="th-unit">kg CO₂e/m³</span></th>
+                <th scope="col">28 días</th>
+                <th scope="col">Estado</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="10" class="empty">
+                        Aún no hay diseños@(proyectoSel != null ? " en este proyecto" : "").
+                        @if (disena) {<a class="btn btn-primary btn-sm" href="@Url.Action("Create", new { idProyecto = proyectoSel })">Crear diseño</a>}
+                    </td>
+                </tr>
+            }
+            @foreach (var d in Model)
+            {
+                <tr>
+                    <td><a class="code-link" href="@Url.Action("Details", new { id = d.IdDiseno })">@d.Codigo</a></td>
+                    <td class="text-truncate" style="max-width:220px">@d.Proyecto</td>
+                    <td class="num">@d.FcKgCm2</td>
+                    <td class="text-truncate" style="max-width:220px">@d.Cemento</td>
+                    <td class="num">@Formato.Kg(d.CementoKg)</td>
+                    <td class="num">@Formato.Soles(d.Costo)</td>
+                    <td class="num">@Formato.CO2(d.CO2)</td>
+                    <td>@Html.Partial("_ResistenciaBadge", RecomendacionService.EvaluarResistencia(d.FcKgCm2, d.Resistencia28d))</td>
+                    <td>@Html.Partial("_EstadoBadge", d.Estado)</td>
+                    <td class="row-actions">
+                        <a class="btn btn-ghost" href="@Url.Action("Details", new { id = d.IdDiseno })"><i class="bi bi-eye"></i>Ver</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

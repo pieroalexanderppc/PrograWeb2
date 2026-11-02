@@ -1,0 +1,98 @@
+﻿@model ParametrosAci
+@{
+    ViewBag.Title = "Parámetros ACI";
+    var tmns = Opciones.Tmn;
+    var rangos = Model.AguaAire.Select(x => new { x.AsentamientoMin, x.AsentamientoMax }).Distinct().OrderBy(x => x.AsentamientoMin).ToList();
+    var modulos = Model.AgregadoGrueso.Select(x => x.ModuloFineza).Distinct().OrderBy(x => x).ToList();
+}
+<div class="page-head">
+    <div>
+        <h1>Parámetros ACI 211.1</h1>
+        <div class="meta">Tablas que usa el cálculo de dosificación (concreto sin aire incorporado). Vista de solo lectura.</div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-head"><h2>Agua de mezcla <span class="unit">L/m³</span></h2></div>
+    <div class="table-wrap">
+        <table class="table-cc table-matrix">
+            <thead>
+                <tr>
+                    <th scope="col">Asentamiento</th>
+                    @foreach (var t in tmns) { <th scope="col" class="num">TMN @t</th> }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in rangos)
+                {
+                    <tr>
+                        <td>@Formato.Pulg(r.AsentamientoMin)" – @Formato.Pulg(r.AsentamientoMax)"</td>
+                        @foreach (var t in tmns)
+                        {
+                            var f = Model.AguaAire.FirstOrDefault(x => x.TamanoMaxNominal == t && x.AsentamientoMin == r.AsentamientoMin);
+                            <td class="num">@(f != null ? f.AguaLitrosM3.ToString("N0", Formato.Pe) : "—")</td>
+                        }
+                    </tr>
+                }
+                <tr>
+                    <td>Aire atrapado <span class="unit">%</span></td>
+                    @foreach (var t in tmns)
+                    {
+                        var f = Model.AguaAire.FirstOrDefault(x => x.TamanoMaxNominal == t);
+                        <td class="num">@(f != null ? Formato.Pct(f.AireAtrapado) : "—")</td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="section-head"><h2>Relación a/c</h2></div>
+        <div class="table-wrap">
+            <table class="table-cc table-matrix">
+                <thead>
+                    <tr>
+                        <th scope="col">f'cr<span class="th-unit">kg/cm²</span></th>
+                        <th scope="col" class="num">a/c</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.RelacionAC.OrderBy(x => x.FcrKgCm2))
+                    {
+                        <tr><td class="num" style="text-align:left">@p.FcrKgCm2</td><td class="num">@Formato.AC(p.RelacionAC)</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="help mt-2">Entre filas se interpola linealmente.</div>
+    </div>
+    <div class="col-lg-8">
+        <div class="section-head"><h2>Volumen de agregado grueso <span class="unit">m³ por m³ de concreto</span></h2></div>
+        <div class="table-wrap">
+            <table class="table-cc table-matrix">
+                <thead>
+                    <tr>
+                        <th scope="col">TMN</th>
+                        @foreach (var mf in modulos) { <th scope="col" class="num">MF @mf.ToString("0.00", Formato.Pe)</th> }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in tmns)
+                    {
+                        <tr>
+                            <td>@t</td>
+                            @foreach (var mf in modulos)
+                            {
+                                var f = Model.AgregadoGrueso.FirstOrDefault(x => x.TamanoMaxNominal == t && x.ModuloFineza == mf);
+                                <td class="num">@(f != null ? f.VolumenM3.ToString("0.00", Formato.Pe) : "—")</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="help mt-2">Se interpola según el módulo de fineza de la arena.</div>
+    </div>
+</div>

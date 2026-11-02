@@ -1,0 +1,86 @@
+﻿@model List<Material>
+@{
+    ViewBag.Title = "Materiales";
+    var tipos = (List<TipoMaterial>)ViewBag.Tipos;
+    int? tipoSel = ViewBag.Tipo;
+}
+<div class="page-head">
+    <div>
+        <h1>Materiales</h1>
+        <div class="meta">Catálogo de cementos, agregados, agua y aditivos con su costo y factor de CO₂.</div>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-primary" href="@Url.Action("Create")"><i class="bi bi-plus-lg"></i>Nuevo material</a>
+    </div>
+</div>
+
+<form method="get" class="d-flex flex-wrap gap-2 mb-3" role="search">
+    <input type="search" name="q" value="@ViewBag.Q" class="form-control" style="max-width:300px" placeholder="Buscar por nombre o proveedor" aria-label="Buscar" />
+    <select name="tipo" class="form-select" style="max-width:220px" aria-label="Filtrar por tipo" onchange="this.form.submit()">
+        <option value="">Todos los tipos</option>
+        @foreach (var t in tipos)
+        {
+            <option value="@t.IdTipoMaterial" selected="@(tipoSel == t.IdTipoMaterial)">@t.Nombre</option>
+        }
+    </select>
+    <button type="submit" class="btn btn-secondary"><i class="bi bi-search"></i>Buscar</button>
+</form>
+
+<div class="table-wrap">
+    <table class="table-cc">
+        <thead>
+            <tr>
+                <th scope="col">Material</th>
+                <th scope="col" class="num">P. específico<span class="th-unit">g/cm³</span></th>
+                <th scope="col">Propiedad clave</th>
+                <th scope="col" class="num">Costo<span class="th-unit">S/ por kg</span></th>
+                <th scope="col" class="num">Factor CO₂<span class="th-unit">kg CO₂e/kg</span></th>
+                <th scope="col">Estado</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="7" class="empty">No hay materiales con ese filtro.<a class="btn btn-primary btn-sm" href="@Url.Action("Create")">Crear material</a></td></tr>
+            }
+            @foreach (var m in Model)
+            {
+                string clave = "—";
+                if (m.PorcentajeAdicion != null) { clave = "Adición " + Formato.Pct(m.PorcentajeAdicion) + " %"; }
+                else if (m.ModuloFineza != null) { clave = "MF " + m.ModuloFineza.Value.ToString("0.00", Formato.Pe); }
+                else if (m.TamanoMaxNominal != null) { clave = "TMN " + m.TamanoMaxNominal + " · PUC " + Formato.Kg(m.PesoUnitarioCompactado) + " kg/m³"; }
+                <tr>
+                    <td class="col-name">
+                        <div style="font-weight:500">@m.Nombre</div>
+                        <div class="sub">@m.TipoMaterial.Nombre · @(m.Proveedor ?? "sin proveedor")</div>
+                    </td>
+                    <td class="num">@m.PesoEspecifico.ToString("0.000", Formato.Pe)</td>
+                    <td class="code">@clave</td>
+                    <td class="num">@m.CostoKg.ToString("N4", Formato.Pe)</td>
+                    <td class="num">@m.FactorCO2Kg.ToString("N5", Formato.Pe)</td>
+                    <td>
+                        @if (m.Activo)
+                        {
+                            <span class="badge-cc">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge-cc"><i class="bi bi-slash-circle"></i>Inactivo</span>
+                        }
+                    </td>
+                    <td class="row-actions">
+                        <a class="btn btn-ghost" href="@Url.Action("Edit", new { id = m.IdMaterial })"><i class="bi bi-pencil"></i>Editar</a>
+                        <button type="button" class="btn btn-ghost btn-danger-outline" data-bs-toggle="modal" data-bs-target="#modalConfirmar"
+                                data-accion="@Url.Action("Delete", new { id = m.IdMaterial })"
+                                data-confirmar="¿Eliminar &quot;@m.Nombre&quot;? Si ya se usa en diseños, solo se desactivará.">
+                            <i class="bi bi-trash3"></i>Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@Html.Partial("_ConfirmarEliminar")

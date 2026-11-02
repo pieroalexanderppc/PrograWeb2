@@ -1,0 +1,12 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Compilación
+bin/
+obj/
+TestResults/
+
+# Paquetes NuGet (se restauran con "Restaurar paquetes NuGet")
+packages/

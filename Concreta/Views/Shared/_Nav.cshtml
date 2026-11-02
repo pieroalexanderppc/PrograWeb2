@@ -1,0 +1,28 @@
+﻿@{
+    bool esAdmin = User.IsInRole(RolNombre.Administrador);
+    bool esIngeniero = User.IsInRole(RolNombre.Ingeniero);
+    bool disena = esAdmin || esIngeniero;
+}
+<nav class="side-nav">
+    <a class="side-link @Html.MenuActivo("Inicio")" href="@Url.Action("Index", "Inicio")"><i class="bi bi-house"></i>Inicio</a>
+    @if (disena)
+    {
+        <a class="side-link @Html.MenuActivo("Proyectos")" href="@Url.Action("Index", "Proyectos")"><i class="bi bi-folder2"></i>Proyectos</a>
+    }
+    <a class="side-link @Html.MenuActivo("Disenos")" href="@Url.Action("Index", "Disenos")"><i class="bi bi-calculator"></i>Diseños</a>
+    @if (disena)
+    {
+        <a class="side-link @Html.MenuActivo("Alternativas")" href="@Url.Action("Index", "Alternativas")"><i class="bi bi-shuffle"></i>Alternativas</a>
+        <a class="side-link @Html.MenuActivo("Comparaciones")" href="@Url.Action("Index", "Comparaciones")"><i class="bi bi-layout-split"></i>Comparar</a>
+    }
+    <a class="side-link @Html.MenuActivo("Ensayos")" href="@Url.Action("Index", "Ensayos")"><i class="bi bi-clipboard-data"></i>Ensayos</a>
+
+    @if (esAdmin)
+    {
+        <hr />
+        <div class="eyebrow">Administración</div>
+        <a class="side-link @Html.MenuActivo("Materiales")" href="@Url.Action("Index", "Materiales")"><i class="bi bi-box-seam"></i>Materiales</a>
+        <a class="side-link @Html.MenuActivo("Parametros")" href="@Url.Action("Index", "Parametros")"><i class="bi bi-sliders"></i>Parámetros ACI</a>
+        <a class="side-link @Html.MenuActivo("Usuarios")" href="@Url.Action("Index", "Usuarios")"><i class="bi bi-people"></i>Usuarios</a>
+    }
+</nav>

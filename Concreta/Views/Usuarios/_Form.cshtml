@@ -1,0 +1,43 @@
+﻿@model UsuarioFormVM
+@{
+    bool nuevo = Model.IdUsuario == 0;
+}
+@Html.AntiForgeryToken()
+@Html.ValidationSummary(true)
+<div class="form-section">
+    <div class="row g-3">
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Nombres, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Nombres, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Nombres)
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Apellidos, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Apellidos, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Apellidos)
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Correo, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Correo, new { @class = "form-control", type = "email", autocomplete = "off" })
+            @Html.ValidationMessageFor(m => m.Correo)
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.IdRol, new { @class = "form-label" })
+            @Html.DropDownListFor(m => m.IdRol, Model.Roles, "Selecciona…", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.IdRol)
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Contrasena, new { @class = "form-label" })
+            @Html.PasswordFor(m => m.Contrasena, new { @class = "form-control", autocomplete = "new-password" })
+            <div class="help">@(nuevo ? "Mínimo 8 caracteres." : "Déjala vacía para mantener la contraseña actual.")</div>
+            @Html.ValidationMessageFor(m => m.Contrasena)
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check mb-2">
+                @Html.CheckBoxFor(m => m.Activo, new { @class = "form-check-input" })
+                @Html.LabelFor(m => m.Activo, "Activo (puede iniciar sesión)", new { @class = "form-check-label" })
+                @Html.ValidationMessageFor(m => m.Activo)
+            </div>
+        </div>
+    </div>
+</div>

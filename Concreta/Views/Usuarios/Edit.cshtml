@@ -1,0 +1,20 @@
+﻿@model UsuarioFormVM
+@{
+    ViewBag.Title = Model.Nombres + " " + Model.Apellidos;
+    ViewBag.Seccion = "Usuarios";
+    ViewBag.SeccionUrl = Url.Action("Index");
+}
+<div class="page-head">
+    <div><h1>Editar usuario</h1><div class="meta code">@Model.Correo</div></div>
+</div>
+<div style="max-width:720px">
+    @using (Html.BeginForm("Edit", "Usuarios", new { id = Model.IdUsuario }, FormMethod.Post))
+    {
+        @Html.HiddenFor(m => m.IdUsuario)
+        @Html.Partial("_Form", Model)
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>Guardar cambios</button>
+            <a class="btn btn-secondary" href="@Url.Action("Index")">Cancelar</a>
+        </div>
+    }
+</div>

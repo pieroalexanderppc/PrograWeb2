@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "Acerca de";
+}
+<div class="page-head">
+    <div>
+        <h1>Acerca de Concreta</h1>
+        <div class="meta">Método, fuentes de datos, licencias y equipo.</div>
+    </div>
+</div>
+
+<div class="prose">
+    <section>
+        <h2>Qué es</h2>
+        <p>Concreta es un sistema web que apoya el diseño de mezclas de concreto con cementos adicionados: calcula la dosificación por m³, estima el costo y la huella de carbono, compara alternativas y recomienda una con una justificación interpretable.</p>
+        <p>Proyecto del curso Programación Web II (Universidad Privada de Tacna, EPIS), alineado con el Reto 2 de la Hackathon Innova Sur 2026.</p>
+    </section>
+
+    <section>
+        <h2>Método de cálculo</h2>
+        <p>Dosificación por volúmenes absolutos según <strong>ACI 211.1</strong> (Standard Practice for Selecting Proportions for Normal, Heavyweight, and Mass Concrete), para concreto sin aire incorporado:</p>
+        <ul>
+            <li>Resistencia promedio requerida f'cr sin datos de desviación estándar: f'c + 70, f'c + 84 o 1.1·f'c + 50 kg/cm², según el rango de f'c.</li>
+            <li>Agua de mezcla y aire atrapado según el tamaño máximo nominal y el asentamiento.</li>
+            <li>Relación agua/cemento por interpolación lineal según f'cr.</li>
+            <li>Volumen de agregado grueso según el tamaño máximo nominal y el módulo de fineza de la arena.</li>
+            <li>Arena por diferencia hasta completar 1 m³.</li>
+        </ul>
+        <p>La recomendación normaliza costo y CO₂ entre los diseños (min-max) y los pondera según el criterio elegido. Un diseño cumple si su ensayo de compresión a 28 días alcanza f'c.</p>
+    </section>
+
+    <section>
+        <h2>Datos y valores referenciales</h2>
+        <p>Los costos por kg y los factores de CO₂ de los materiales son <strong>valores referenciales del prototipo</strong>; deben reemplazarse por las fichas técnicas del proveedor antes de usar los resultados en obra.</p>
+        <p>Las alternativas del generador son teóricas: la resistencia debe confirmarse con ensayos a 7 y 28 días.</p>
+        <p>Fase futura: modelo predictivo de resistencia entrenado con el dataset abierto <em>Concrete Compressive Strength</em>, UCI Machine Learning Repository (I-Cheng Yeh, 1998), licencia CC BY 4.0.</p>
+    </section>
+
+    <section>
+        <h2>Software y licencias</h2>
+        <ul>
+            <li>ASP.NET MVC 5.2, Razor y Web Pages — paquetes NuGet bajo la licencia de bibliotecas .NET de Microsoft (gratuita).</li>
+            <li>Entity Framework 6.5 — MIT License.</li>
+            <li>Bootstrap 5.3 y Bootstrap Icons — MIT License.</li>
+            <li>jQuery y jQuery Validation — MIT License.</li>
+            <li>IBM Plex Sans e IBM Plex Mono — SIL Open Font License 1.1.</li>
+            <li>SQL Server 2022 Developer / Express — licencia gratuita de Microsoft.</li>
+        </ul>
+        <p>La interfaz no usa logos ni marcas de terceros.</p>
+    </section>
+
+    <section>
+        <h2>Equipo</h2>
+        <p>Piero Alexander Paja de la Cruz · Erlang Fernando Vilca Condori · Nicolas Alonso Telleria Espinoza</p>
+        <p class="meta">Docente: Enrique Félix Lanchipa Valencia</p>
+    </section>
+</div>

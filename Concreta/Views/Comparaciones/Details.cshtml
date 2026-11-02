@@ -1,0 +1,130 @@
+﻿@model ComparacionDetalleVM
+@{
+    var c = Model.Comparacion;
+    ViewBag.Title = c.Nombre;
+    ViewBag.Seccion = "Comparar";
+    ViewBag.SeccionUrl = Url.Action("Index");
+    var cols = Model.Columnas;
+
+    // La mejor celda de cada fila va en negrita
+    decimal minCosto = cols.Min(x => x.Diseno.CostoTotalM3 ?? decimal.MaxValue);
+    decimal minCO2 = cols.Min(x => x.Diseno.HuellaCO2M3 ?? decimal.MaxValue);
+    decimal minCemento = cols.Min(x => x.CementoKg);
+    decimal maxR28 = cols.Max(x => x.Resistencia28d ?? 0m);
+    decimal maxPuntaje = cols.Max(x => x.Puntaje);
+    Func<bool, string> best = b => b && cols.Count > 1 ? "best" : "";
+}
+<div class="page-head">
+    <div>
+        <h1>@c.Nombre</h1>
+        <div class="meta">
+            <span>Criterio: @Criterio.Etiqueta(c.Criterio)</span>
+            <span>@Formato.Fecha(c.FechaComparacion) · @c.Usuario.NombreCompleto</span>
+        </div>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="@(Url.Action("Create") + "?" + string.Join("&", cols.Select(x => "ids=" + x.Diseno.IdDiseno)))"><i class="bi bi-arrow-repeat"></i>Comparar de nuevo</a>
+    </div>
+</div>
+
+<div class="section">
+    @if (Model.Recomendada != null)
+    {
+        <div class="reco">
+            <div>
+                <div class="eyebrow" style="color:var(--cc-brand)">Recomendado</div>
+                <a class="reco-code d-block" href="@Url.Action("Details", "Disenos", new { id = Model.Recomendada.Diseno.IdDiseno })">@Model.Recomendada.Diseno.Codigo</a>
+                <p class="reco-text">@Formato.Quimica(c.Justificacion)</p>
+            </div>
+            <div class="reco-score">
+                <div class="eyebrow">Puntaje</div>
+                <span class="num">@Formato.Pct(Model.Recomendada.Puntaje)</span><span class="unit">/ 100</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert-cc warn"><i class="bi bi-exclamation-triangle"></i><div>@Formato.Quimica(c.Justificacion)</div></div>
+    }
+</div>
+
+<div class="section">
+    <div class="section-head"><h2>Comparación lado a lado</h2></div>
+    <div class="table-wrap">
+        <table class="table-cc">
+            <thead>
+                <tr>
+                    <th scope="col">Indicador</th>
+                    @foreach (var col in cols)
+                    {
+                        <th scope="col" class="num">
+                            <a class="code-link" href="@Url.Action("Details", "Disenos", new { id = col.Diseno.IdDiseno })">@col.Diseno.Codigo</a>
+                            <span class="th-unit">#@col.Posicion</span>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cemento</td>
+                    @foreach (var col in cols) { <td class="num" style="font-family:var(--cc-font-sans);font-size:13px">@col.Cemento</td> }
+                </tr>
+                <tr>
+                    <td>f'c <span class="unit">kg/cm²</span></td>
+                    @foreach (var col in cols) { <td class="num">@col.Diseno.FcKgCm2</td> }
+                </tr>
+                <tr>
+                    <td>Relación a/c</td>
+                    @foreach (var col in cols) { <td class="num">@Formato.AC(col.Diseno.RelacionAC)</td> }
+                </tr>
+                <tr>
+                    <td>Cemento <span class="unit">kg/m³</span></td>
+                    @foreach (var col in cols) { <td class="num @best(col.CementoKg == minCemento)">@Formato.Kg(col.CementoKg)</td> }
+                </tr>
+                <tr>
+                    <td>Costo <span class="unit">S/ por m³</span></td>
+                    @foreach (var col in cols) { <td class="num @best(col.Diseno.CostoTotalM3 == minCosto)">@Formato.Soles(col.Diseno.CostoTotalM3)</td> }
+                </tr>
+                <tr>
+                    <td>Huella CO₂ <span class="unit">kg CO₂e/m³</span></td>
+                    @foreach (var col in cols) { <td class="num @best(col.Diseno.HuellaCO2M3 == minCO2)">@Formato.CO2(col.Diseno.HuellaCO2M3)</td> }
+                </tr>
+                <tr>
+                    <td>Resistencia a 28 días <span class="unit">kg/cm²</span></td>
+                    @foreach (var col in cols) { <td class="num @best(col.Resistencia28d != null && col.Resistencia28d == maxR28)">@Formato.Kg(col.Resistencia28d)</td> }
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    @foreach (var col in cols) { <td class="num">@Html.Partial("_ResistenciaBadge", col.Estado)</td> }
+                </tr>
+                <tr>
+                    <td>Puntaje <span class="unit">/ 100</span></td>
+                    @foreach (var col in cols) { <td class="num @best(col.Puntaje == maxPuntaje)">@Formato.Pct(col.Puntaje)</td> }
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-head"><h2>Composición del m³</h2></div>
+    @foreach (var col in cols)
+    {
+        <div class="mix-row">
+            <span class="code">@col.Diseno.Codigo</span>
+            <div>@Html.Partial("_MixBar", new DosificacionVM { Segmentos = col.Dosificacion.Segmentos, MostrarLeyenda = false })</div>
+        </div>
+    }
+    @if (cols.Any())
+    {
+        <div class="mix-row">
+            <span></span>
+            <div class="mix-legend" style="margin-top:0">
+                @foreach (var s in cols.SelectMany(x => x.Dosificacion.Segmentos).GroupBy(x => x.Nombre).Select(g => g.First()))
+                {
+                    <span><span class="sw @(s.Nombre == "Aire" ? "aire" : "")" style="background:var(@s.ColorVar)"></span>@s.Nombre</span>
+                }
+            </div>
+        </div>
+    }
+</div>

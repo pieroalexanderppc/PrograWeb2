@@ -1,0 +1,182 @@
+﻿@model DisenoFormVM
+@{
+    ViewBag.Title = "Nuevo diseño";
+    ViewBag.Seccion = "Diseños";
+    ViewBag.SeccionUrl = Url.Action("Index");
+    var r = Model.Resultado;
+    bool hayResultado = r != null && Model.ErrorCalculo == null;
+    var todos = Model.Cementos.Concat(Model.Arenas).Concat(Model.Piedras).Concat(Model.Aguas).Concat(Model.Aditivos);
+}
+<div class="page-head">
+    <div>
+        <h1>Nuevo diseño de mezcla</h1>
+        <div class="meta">Método ACI 211.1 · concreto sin aire incorporado</div>
+    </div>
+</div>
+
+@using (Html.BeginForm("Create", "Disenos", FormMethod.Post, new { data_calculo = "" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row g-5">
+        <div class="col-lg-6 col-xxl-7">
+            @Html.ValidationSummary(true)
+
+            <div class="form-section">
+                <h2 class="section-title">Requisitos</h2>
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        @Html.LabelFor(m => m.FcKgCm2, "f'c", new { @class = "form-label" })
+                        <div class="input-group">
+                            @Html.TextBoxFor(m => m.FcKgCm2, new { @class = "form-control input-num", type = "number", step = "1" })
+                            <span class="input-group-text">kg/cm²</span>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.FcKgCm2)
+                    </div>
+                    <div class="col-sm-4">
+                        @Html.LabelFor(m => m.AsentamientoPulg, new { @class = "form-label" })
+                        <div class="input-group">
+                            @Html.TextBoxFor(m => m.AsentamientoPulg, new { @class = "form-control input-num", type = "number", step = "0.5" })
+                            <span class="input-group-text">pulg</span>
+                        </div>
+                        <div class="help">Losas y vigas: 3"–4".</div>
+                        @Html.ValidationMessageFor(m => m.AsentamientoPulg)
+                    </div>
+                    <div class="col-sm-4">
+                        @Html.LabelFor(m => m.TamanoMaxNominal, "TMN", new { @class = "form-label" })
+                        @Html.DropDownListFor(m => m.TamanoMaxNominal, new SelectList(Opciones.Tmn, Model.TamanoMaxNominal), new { @class = "form-select" })
+                        <div class="help">Tamaño máximo nominal de la piedra.</div>
+                        @Html.ValidationMessageFor(m => m.TamanoMaxNominal)
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="section-title">Materiales</h2>
+                <div class="row g-3">
+                    <div class="col-12">
+                        @Html.LabelFor(m => m.IdCemento, new { @class = "form-label" })
+                        @Html.DropDownListFor(m => m.IdCemento, new SelectList(Model.Cementos, "IdMaterial", "Nombre", Model.IdCemento), "Selecciona…", new { @class = "form-select", data_props_destino = "propsCemento" })
+                        <div class="material-props" id="propsCemento"></div>
+                        @Html.ValidationMessageFor(m => m.IdCemento)
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.IdArena, new { @class = "form-label" })
+                        @Html.DropDownListFor(m => m.IdArena, new SelectList(Model.Arenas, "IdMaterial", "Nombre", Model.IdArena), "Selecciona…", new { @class = "form-select", data_props_destino = "propsArena" })
+                        <div class="material-props" id="propsArena"></div>
+                        @Html.ValidationMessageFor(m => m.IdArena)
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.IdPiedra, new { @class = "form-label" })
+                        @Html.DropDownListFor(m => m.IdPiedra, new SelectList(Model.Piedras, "IdMaterial", "Nombre", Model.IdPiedra), "Selecciona…", new { @class = "form-select", data_props_destino = "propsPiedra" })
+                        <div class="material-props" id="propsPiedra"></div>
+                        @Html.ValidationMessageFor(m => m.IdPiedra)
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.IdAgua, new { @class = "form-label" })
+                        @Html.DropDownListFor(m => m.IdAgua, new SelectList(Model.Aguas, "IdMaterial", "Nombre", Model.IdAgua), "Selecciona…", new { @class = "form-select", data_props_destino = "propsAgua" })
+                        <div class="material-props" id="propsAgua"></div>
+                        @Html.ValidationMessageFor(m => m.IdAgua)
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.IdAditivo, new { @class = "form-label" })
+                        @Html.DropDownListFor(m => m.IdAditivo, new SelectList(Model.Aditivos, "IdMaterial", "Nombre", Model.IdAditivo), "Sin aditivo", new { @class = "form-select", data_props_destino = "propsAditivo" })
+                        <div class="material-props" id="propsAditivo"></div>
+                    </div>
+                    <div class="col-md-6" data-mostrar-si="IdAditivo:*">
+                        @Html.LabelFor(m => m.AditivoDosisKg, new { @class = "form-label" })
+                        <div class="input-group">
+                            @Html.TextBoxFor(m => m.AditivoDosisKg, new { @class = "form-control input-num", type = "number", step = "0.01" })
+                            <span class="input-group-text">kg/m³</span>
+                        </div>
+                        <div class="help">Referencia: 1 % del peso del cemento.</div>
+                        @Html.ValidationMessageFor(m => m.AditivoDosisKg)
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="section-title">Proyecto</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.IdProyecto, new { @class = "form-label" })
+                        @Html.DropDownListFor(m => m.IdProyecto, Model.Proyectos, "Selecciona…", new { @class = "form-select" })
+                        @Html.ValidationMessageFor(m => m.IdProyecto)
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.Descripcion, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.Descripcion, new { @class = "form-control", placeholder = "f'c 210 con cemento Tipo IP" })
+                        @Html.ValidationMessageFor(m => m.Descripcion)
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" name="accion" value="calcular" class="btn @(hayResultado ? "btn-secondary" : "btn-primary")">
+                    <i class="bi bi-calculator"></i>@(hayResultado ? "Recalcular" : "Calcular dosificación")
+                </button>
+                <a class="btn btn-ghost" href="@Url.Action("Index")">Cancelar</a>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-xxl-5">
+            <div class="result-panel" data-resultado>
+                @if (Model.ErrorCalculo != null)
+                {
+                    <div class="alert-cc danger"><i class="bi bi-x-circle"></i><div>@Model.ErrorCalculo</div></div>
+                }
+                @if (!hayResultado)
+                {
+                    <div class="result-empty">
+                        <i class="bi bi-calculator" style="font-size:24px;color:var(--cc-400)"></i>
+                        <p class="mt-2 mb-0">Completa los requisitos para ver la dosificación.</p>
+                    </div>
+                }
+                else
+                {
+                    var kpis = new List<KpiVM>
+                    {
+                        new KpiVM("f'cr", r.FcrKgCm2.ToString(), "kg/cm²"),
+                        new KpiVM("Relación a/c", Formato.AC(r.RelacionAC)),
+                        new KpiVM("Costo", Formato.Soles(r.CostoTotalM3), "/m³", "S/"),
+                        new KpiVM("Huella CO₂", Formato.CO2(r.HuellaCO2M3), "kg CO₂e/m³")
+                    };
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="eyebrow">Resultado por m³</div>
+                        <div class="alert-cc warn mb-0 py-1" data-aviso-stale hidden><i class="bi bi-arrow-repeat"></i>Cambiaron los datos: recalcula</div>
+                    </div>
+                    @Html.Partial("_KpiStrip", kpis, new ViewDataDictionary { { "Clase", "compact grid-2" } })
+
+                    if (r.Advertencias.Any())
+                    {
+                        <div class="alert-cc warn mt-3 mb-0">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <ul>@foreach (var a in r.Advertencias) {<li>@a</li>}</ul>
+                        </div>
+                    }
+
+                    <div class="mt-4">
+                        <h2 class="section-title mb-2">Composición del m³</h2>
+                        @Html.Partial("_MixBar", Model.Dosificacion, new ViewDataDictionary { { "Animar", true } })
+                    </div>
+
+                    <div class="mt-4">
+                        <h2 class="section-title mb-2">Dosificación por m³</h2>
+                        @Html.Partial("_Dosificacion", Model.Dosificacion)
+                        <dl class="dl-cc mt-3">
+                            <dt>Agua de mezcla</dt><dd>@Html.Num(Formato.Kg(r.AguaLitros), "L/m³")</dd>
+                            <dt>Aire atrapado</dt><dd>@Html.Num(Formato.Pct(r.AireAtrapadoPct), "%")</dd>
+                            <dt>Vol. agregado grueso</dt><dd>@Html.Num(r.VolumenAgregadoGrueso.ToString("0.000", Formato.Pe), "m³ por m³")</dd>
+                        </dl>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" name="accion" value="guardar" class="btn btn-primary" data-guardar><i class="bi bi-check-lg"></i>Guardar diseño</button>
+                    </div>
+                    <div class="help">Después de guardarlo podrás compararlo con otros diseños.</div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<script type="application/json" id="propsMateriales">@Formato.PropsJson(todos)</script>

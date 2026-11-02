@@ -1,0 +1,27 @@
+﻿@model ProyectoFormVM
+@Html.AntiForgeryToken()
+@Html.ValidationSummary(true)
+<div class="form-section">
+    <div class="row g-3">
+        <div class="col-12">
+            @Html.LabelFor(m => m.Nombre, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control", placeholder = "Losa aligerada vivienda multifamiliar" })
+            @Html.ValidationMessageFor(m => m.Nombre)
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Cliente, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Cliente, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Cliente)
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Ubicacion, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Ubicacion, new { @class = "form-control", placeholder = "Tacna" })
+            @Html.ValidationMessageFor(m => m.Ubicacion)
+        </div>
+        <div class="col-12">
+            @Html.LabelFor(m => m.Descripcion, new { @class = "form-label" })
+            @Html.TextAreaFor(m => m.Descripcion, 3, 0, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Descripcion)
+        </div>
+    </div>
+</div>

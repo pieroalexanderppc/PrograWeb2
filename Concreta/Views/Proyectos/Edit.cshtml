@@ -1,0 +1,20 @@
+﻿@model ProyectoFormVM
+@{
+    ViewBag.Title = Model.Nombre;
+    ViewBag.Seccion = "Proyectos";
+    ViewBag.SeccionUrl = Url.Action("Index");
+}
+<div class="page-head">
+    <div><h1>Editar proyecto</h1></div>
+</div>
+<div style="max-width:720px">
+    @using (Html.BeginForm("Edit", "Proyectos", new { id = Model.IdProyecto }, FormMethod.Post))
+    {
+        @Html.HiddenFor(m => m.IdProyecto)
+        @Html.Partial("_Form", Model)
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>Guardar cambios</button>
+            <a class="btn btn-secondary" href="@Url.Action("Index")">Cancelar</a>
+        </div>
+    }
+</div>

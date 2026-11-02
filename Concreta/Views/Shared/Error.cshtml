@@ -1,0 +1,11 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+@{
+    ViewBag.Title = "Error";
+}
+<div class="page-head">
+    <div>
+        <h1>Algo salió mal</h1>
+        <div class="meta">No se pudo completar la operación. Intenta de nuevo y, si el problema sigue, avisa al administrador.</div>
+    </div>
+</div>
+<a class="btn btn-secondary" href="@Url.Action("Index", "Inicio")"><i class="bi bi-arrow-left"></i>Volver al inicio</a>

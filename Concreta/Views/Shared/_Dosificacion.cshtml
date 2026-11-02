@@ -1,0 +1,46 @@
+﻿@model DosificacionVM
+<div class="table-wrap">
+    <table class="table-cc">
+        <thead>
+            <tr>
+                <th scope="col">Material</th>
+                <th scope="col" class="num">Cantidad<span class="th-unit">kg</span></th>
+                <th scope="col" class="num">Vol. abs.<span class="th-unit">m³</span></th>
+                <th scope="col" class="num">Costo<span class="th-unit">S/</span></th>
+                <th scope="col" class="num">CO₂<span class="th-unit">kg CO₂e</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var l in Model.Lineas)
+            {
+                <tr>
+                    <td>
+                        <div>@l.Tipo</div>
+                        <div class="sub" title="@l.Material.Nombre">@l.Material.Nombre</div>
+                    </td>
+                    <td class="num">@(l.Tipo == TipoLinea.Aditivo ? Formato.Soles(l.CantidadKg) : Formato.Kg(l.CantidadKg))</td>
+                    <td class="num">@Formato.M3(l.VolumenAbsolutoM3)</td>
+                    <td class="num">@Formato.Soles(l.CostoParcial)</td>
+                    <td class="num">@Formato.CO2(l.CO2Parcial)</td>
+                </tr>
+            }
+            <tr>
+                <td><div style="white-space:nowrap">Aire</div><div class="sub">@Formato.Pct(Model.AireAtrapadoPct) % atrapado</div></td>
+                <td class="num text-muted">—</td>
+                <td class="num">@Formato.M3(Model.VolumenAireM3)</td>
+                <td class="num text-muted">—</td>
+                <td class="num text-muted">—</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td style="white-space:nowrap">Total</td>
+                <td class="num">@Formato.Kg(Model.Lineas.Sum(l => l.CantidadKg))</td>
+                @* Total a 3 decimales: la suma de volúmenes redondeados a 4 puede dar 1.0001 *@
+                <td class="num">@((Model.Lineas.Sum(l => l.VolumenAbsolutoM3) + Model.VolumenAireM3).ToString("N3", Formato.Pe))</td>
+                <td class="num">@Formato.Soles(Model.CostoTotal)</td>
+                <td class="num">@Formato.CO2(Model.CO2Total)</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

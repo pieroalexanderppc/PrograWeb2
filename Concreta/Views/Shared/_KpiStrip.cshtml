@@ -1,0 +1,17 @@
+﻿@model IList<KpiVM>
+@{
+    string clase = ViewData["Clase"] as string ?? "";
+}
+<div class="kpi-strip @clase" style="--kpi-n:@Model.Count">
+    @foreach (var k in Model)
+    {
+        <div class="kpi">
+            <div class="eyebrow">@k.Etiqueta</div>
+            <div class="kpi-value">@Html.Num(k.Valor, k.Unidad, k.Prefijo)</div>
+            @if (!string.IsNullOrEmpty(k.Delta))
+            {
+                <div class="kpi-delta @(k.DeltaMejora ? "down" : "up")">@(k.DeltaMejora ? "↓" : "↑") @k.Delta</div>
+            }
+        </div>
+    }
+</div>

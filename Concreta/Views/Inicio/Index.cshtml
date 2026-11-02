@@ -1,0 +1,90 @@
+﻿@model InicioVM
+@{
+    ViewBag.Title = "Inicio";
+    bool disena = User.IsInRole(RolNombre.Administrador) || User.IsInRole(RolNombre.Ingeniero);
+    var usuario = User.Concreta();
+}
+<div class="page-head">
+    <div>
+        <h1>Inicio</h1>
+        <div class="meta">Resumen de proyectos, diseños y ensayos de laboratorio@(usuario != null ? " · " + usuario.NombreCompleto : "")</div>
+    </div>
+    @if (disena)
+    {
+        <div class="page-actions">
+            <a class="btn btn-secondary" href="@Url.Action("Index", "Alternativas")"><i class="bi bi-shuffle"></i>Generar alternativas</a>
+            <a class="btn btn-primary" href="@Url.Action("Create", "Disenos")"><i class="bi bi-plus-lg"></i>Nuevo diseño</a>
+        </div>
+    }
+</div>
+
+<div class="section">
+    @Html.Partial("_KpiStrip", Model.Kpis)
+</div>
+
+<div class="row g-4">
+    <div class="col-xxl-8">
+        <div class="section-head">
+            <h2>Últimos diseños</h2>
+            <a href="@Url.Action("Index", "Disenos")" style="font-size:14px">Ver todos</a>
+        </div>
+        <div class="table-wrap">
+            <table class="table-cc">
+                <thead>
+                    <tr>
+                        <th scope="col">Código</th>
+                        <th scope="col">Proyecto</th>
+                        <th scope="col" class="num">f'c<span class="th-unit">kg/cm²</span></th>
+                        <th scope="col">Cemento</th>
+                        <th scope="col" class="num">Costo<span class="th-unit">S/</span></th>
+                        <th scope="col" class="num">CO₂<span class="th-unit">kg CO₂e</span></th>
+                        <th scope="col">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.UltimosDisenos.Any())
+                    {
+                        <tr><td colspan="7" class="empty">Aún no hay diseños.@if (disena) {<a class="btn btn-primary btn-sm" href="@Url.Action("Create", "Disenos")">Crear diseño</a>}</td></tr>
+                    }
+                    @foreach (var d in Model.UltimosDisenos)
+                    {
+                        <tr>
+                            <td><a class="code-link" href="@Url.Action("Details", "Disenos", new { id = d.IdDiseno })">@d.Codigo</a></td>
+                            <td class="text-truncate" style="max-width:200px">@d.Proyecto</td>
+                            <td class="num">@d.FcKgCm2</td>
+                            <td class="text-truncate" style="max-width:200px">@d.Cemento</td>
+                            <td class="num">@Formato.Soles(d.Costo)</td>
+                            <td class="num">@Formato.CO2(d.CO2)</td>
+                            <td>@Html.Partial("_EstadoBadge", d.Estado)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-xxl-4">
+        <div class="section-head">
+            <h2>Pendientes de ensayo</h2>
+            <a href="@Url.Action("Index", "Ensayos")" style="font-size:14px">Ensayos</a>
+        </div>
+        @if (!Model.PendientesEnsayo.Any())
+        {
+            <p class="meta">Todos los diseños tienen su ensayo de compresión a 28 días.</p>
+        }
+        else
+        {
+            <ul class="list-plain">
+                @foreach (var d in Model.PendientesEnsayo)
+                {
+                    <li>
+                        <div style="min-width:0">
+                            <a class="code-link" href="@Url.Action("Details", "Disenos", new { id = d.IdDiseno })">@d.Codigo</a>
+                            <div class="text-muted text-truncate" style="font-size:13px">@d.Cemento</div>
+                        </div>
+                        @Html.Partial("_ResistenciaBadge", EstadoResistencia.SinEnsayo)
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>

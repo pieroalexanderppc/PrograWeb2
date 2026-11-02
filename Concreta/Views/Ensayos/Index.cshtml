@@ -1,0 +1,56 @@
+﻿@model List<EnsayoLaboratorio>
+@{
+    ViewBag.Title = "Ensayos";
+}
+<div class="page-head">
+    <div>
+        <h1>Ensayos de laboratorio</h1>
+        <div class="meta">Para registrar un ensayo, abre el diseño y usa "Registrar ensayo".</div>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="@Url.Action("Index", "Disenos")"><i class="bi bi-calculator"></i>Ir a diseños</a>
+    </div>
+</div>
+
+<div class="table-wrap">
+    <table class="table-cc">
+        <thead>
+            <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Diseño</th>
+                <th scope="col">Tipo</th>
+                <th scope="col" class="num">Edad<span class="th-unit">días</span></th>
+                <th scope="col" class="num">Valor</th>
+                <th scope="col">Resultado</th>
+                <th scope="col">Registrado por</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="7" class="empty">Aún no hay ensayos registrados.<a class="btn btn-primary btn-sm" href="@Url.Action("Index", "Disenos")">Ver diseños</a></td></tr>
+            }
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td class="num" style="text-align:left">@Formato.Fecha(e.FechaEnsayo)</td>
+                    <td><a class="code-link" href="@Url.Action("Details", "Disenos", new { id = e.IdDiseno })">@e.Diseno.Codigo</a></td>
+                    <td>@Opciones.EtiquetaTipoEnsayo(e.TipoEnsayo)</td>
+                    <td class="num">@(e.EdadDias?.ToString() ?? "—")</td>
+                    <td class="num">@e.ValorObtenido.ToString("N1", Formato.Pe)<span class="unit">@e.Unidad.Replace("2", "²").Replace("m3", "m³")</span></td>
+                    <td>
+                        @if (e.TipoEnsayo == EnsayoLaboratorio.Compresion && e.EdadDias == 28)
+                        {
+                            @Html.Partial("_ResistenciaBadge", e.ValorObtenido >= e.Diseno.FcKgCm2 ? EstadoResistencia.Cumple : EstadoResistencia.NoCumple)
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>@e.Usuario.NombreCompleto</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

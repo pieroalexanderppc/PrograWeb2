@@ -1,0 +1,20 @@
+﻿@* Modal único de confirmación. Se abre con un botón:
+   data-bs-toggle="modal" data-bs-target="#modalConfirmar" data-accion="/Materiales/Delete/5" data-confirmar="¿Eliminar …?" *@
+<div class="modal fade" id="modalConfirmar" tabindex="-1" aria-labelledby="modalConfirmarTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="post" action="">
+            @Html.AntiForgeryToken()
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalConfirmarTitulo">Confirmar eliminación</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" data-mensaje></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i>Eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>

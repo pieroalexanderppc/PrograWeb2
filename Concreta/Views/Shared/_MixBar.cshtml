@@ -1,0 +1,21 @@
+﻿@model DosificacionVM
+@{
+    string etiqueta = "Composición por m³: " + string.Join(", ",
+        Model.Segmentos.Select(s => s.Nombre.ToLowerInvariant() + " " + Formato.Pct(s.Porcentaje) + "%"));
+    bool animar = ViewData["Animar"] as bool? ?? false;
+}
+<div class="mix-bar @Model.ClaseBarra" role="img" aria-label="@etiqueta" @(animar ? "data-animar" : "")>
+    @foreach (var s in Model.Segmentos)
+    {
+        <span style="width:@(Formato.Css(s.Porcentaje))%;background:var(@s.ColorVar)" title="@s.Nombre · @Formato.Pct(s.Porcentaje) %"></span>
+    }
+</div>
+@if (Model.MostrarLeyenda)
+{
+    <div class="mix-legend">
+        @foreach (var s in Model.Segmentos)
+        {
+            <span><span class="sw @(s.Nombre == "Aire" ? "aire" : "")" style="background:var(@s.ColorVar)"></span>@s.Nombre<span class="num">@Formato.M3(s.VolumenM3) m³ (@Formato.Pct(s.Porcentaje) %)</span></span>
+        }
+    </div>
+}

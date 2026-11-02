@@ -1,0 +1,44 @@
+﻿@model List<Usuario>
+@{
+    ViewBag.Title = "Usuarios";
+}
+<div class="page-head">
+    <div>
+        <h1>Usuarios</h1>
+        <div class="meta">Administrador, Ingeniero y Laboratorista.</div>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-primary" href="@Url.Action("Create")"><i class="bi bi-person-plus"></i>Nuevo usuario</a>
+    </div>
+</div>
+
+<div class="table-wrap">
+    <table class="table-cc">
+        <thead>
+            <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Correo</th>
+                <th scope="col">Rol</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Registro</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td style="font-weight:500">@u.NombreCompleto</td>
+                    <td class="code">@u.Correo</td>
+                    <td><span class="badge-cc">@u.Rol.Nombre</span></td>
+                    <td>
+                        @if (u.Activo) { <span class="badge-cc ok"><i class="bi bi-check-lg"></i>Activo</span> }
+                        else { <span class="badge-cc"><i class="bi bi-slash-circle"></i>Inactivo</span> }
+                    </td>
+                    <td class="num" style="text-align:left">@Formato.Fecha(u.FechaRegistro)</td>
+                    <td class="row-actions"><a class="btn btn-ghost" href="@Url.Action("Edit", new { id = u.IdUsuario })"><i class="bi bi-pencil"></i>Editar</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,71 @@
+﻿@model List<Proyecto>
+@{
+    ViewBag.Title = "Proyectos";
+}
+<div class="page-head">
+    <div>
+        <h1>Proyectos</h1>
+        <div class="meta">Obras o clientes que agrupan los diseños de mezcla.</div>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-primary" href="@Url.Action("Create")"><i class="bi bi-plus-lg"></i>Nuevo proyecto</a>
+    </div>
+</div>
+
+<form method="get" class="d-flex flex-wrap gap-2 mb-3" role="search">
+    <input type="search" name="q" value="@ViewBag.Q" class="form-control" style="max-width:320px" placeholder="Buscar por nombre, cliente o ubicación" aria-label="Buscar" />
+    <button type="submit" class="btn btn-secondary"><i class="bi bi-search"></i>Buscar</button>
+</form>
+
+<div class="table-wrap">
+    <table class="table-cc">
+        <thead>
+            <tr>
+                <th scope="col">Proyecto</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Ubicación</th>
+                <th scope="col" class="num">Diseños</th>
+                <th scope="col">Responsable</th>
+                <th scope="col">Creado</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="7" class="empty">Aún no hay proyectos.<a class="btn btn-primary btn-sm" href="@Url.Action("Create")">Crear proyecto</a></td></tr>
+            }
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>
+                        <a href="@Url.Action("Index", "Disenos", new { proyecto = p.IdProyecto })" style="font-weight:500">@p.Nombre</a>
+                        @if (!string.IsNullOrEmpty(p.Descripcion))
+                        {
+                            <div class="text-muted text-truncate" style="font-size:12px;max-width:320px">@p.Descripcion</div>
+                        }
+                    </td>
+                    <td>@(p.Cliente ?? "—")</td>
+                    <td>@(p.Ubicacion ?? "—")</td>
+                    <td class="num">@p.Disenos.Count</td>
+                    <td>@p.Usuario.NombreCompleto</td>
+                    <td class="num" style="text-align:left">@Formato.Fecha(p.FechaCreacion)</td>
+                    <td class="row-actions">
+                        <a class="btn btn-ghost" href="@Url.Action("Create", "Disenos", new { idProyecto = p.IdProyecto })"><i class="bi bi-plus-lg"></i>Diseño</a>
+                        <a class="btn btn-ghost" href="@Url.Action("Edit", new { id = p.IdProyecto })"><i class="bi bi-pencil"></i>Editar</a>
+                        @if (p.Disenos.Count == 0)
+                        {
+                            <button type="button" class="btn btn-ghost btn-danger-outline" data-bs-toggle="modal" data-bs-target="#modalConfirmar"
+                                    data-accion="@Url.Action("Delete", new { id = p.IdProyecto })"
+                                    data-confirmar="¿Eliminar el proyecto &quot;@p.Nombre&quot;? Esta acción no se puede deshacer.">
+                                <i class="bi bi-trash3"></i>Eliminar
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@Html.Partial("_ConfirmarEliminar")

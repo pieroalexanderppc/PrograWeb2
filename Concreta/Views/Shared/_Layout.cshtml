@@ -1,0 +1,94 @@
+﻿@{
+    var usuario = User.Concreta();
+    string seccion = ViewBag.Seccion as string;
+    string seccionUrl = ViewBag.SeccionUrl as string;
+}
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewBag.Title · Concreta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="~/Content/site.css" rel="stylesheet">
+</head>
+<body>
+    <aside class="app-sidebar" aria-label="Navegación principal">
+        <a class="brand" href="@Url.Action("Index", "Inicio")"><span class="brand-mark"></span>CONCRETA</a>
+        @Html.Partial("_Nav")
+        <div class="side-foot">
+            <a class="side-link @Html.MenuActivo("Acerca")" href="@Url.Action("Index", "Acerca")"><i class="bi bi-info-circle"></i>Acerca de</a>
+        </div>
+    </aside>
+
+    <div class="offcanvas offcanvas-start app-offcanvas" tabindex="-1" id="menuMovil" aria-labelledby="menuMovilTitulo">
+        <div class="brand" id="menuMovilTitulo"><span class="brand-mark"></span>CONCRETA
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+        @Html.Partial("_Nav")
+        <div class="side-foot">
+            <a class="side-link @Html.MenuActivo("Acerca")" href="@Url.Action("Index", "Acerca")"><i class="bi bi-info-circle"></i>Acerca de</a>
+        </div>
+    </div>
+
+    <div class="app-main">
+        <header class="app-topbar">
+            <button class="btn btn-ghost d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuMovil" aria-label="Abrir menú">
+                <i class="bi bi-list" style="font-size:20px"></i>
+            </button>
+            <nav class="crumbs" aria-label="Ruta">
+                @if (!string.IsNullOrEmpty(seccion))
+                {
+                    if (!string.IsNullOrEmpty(seccionUrl))
+                    {
+                        <a href="@seccionUrl">@seccion</a>
+                    }
+                    else
+                    {
+                        <span>@seccion</span>
+                    }
+                    <span class="sep">/</span>
+                }
+                <span class="current">@ViewBag.Title</span>
+            </nav>
+            @if (usuario != null)
+            {
+                <div class="dropdown ms-auto">
+                    <button class="user-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle" style="font-size:18px;color:var(--cc-500)"></i>
+                        <span class="d-none d-sm-inline">@usuario.NombreCompleto</span>
+                        <span class="badge-cc">@usuario.Rol</span>
+                        <i class="bi bi-chevron-down" style="font-size:12px;color:var(--cc-500)"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <span class="dropdown-item-text text-muted" style="font-size:13px">@User.Identity.Name</span>
+                        <div class="dropdown-divider"></div>
+                        @using (Html.BeginForm("Logout", "Cuenta", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</button>
+                        }
+                    </div>
+                </div>
+            }
+        </header>
+
+        <main class="app-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    @Html.Partial("_Toast")
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Scripts/concreta.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,13 @@
+﻿@model EstadoResistencia
+@switch (Model)
+{
+    case EstadoResistencia.Cumple:
+        <span class="badge-cc ok"><i class="bi bi-check-lg"></i>Cumple</span>
+        break;
+    case EstadoResistencia.NoCumple:
+        <span class="badge-cc danger"><i class="bi bi-x-lg"></i>No cumple</span>
+        break;
+    default:
+        <span class="badge-cc warn"><i class="bi bi-clock"></i>Sin ensayo</span>
+        break;
+}

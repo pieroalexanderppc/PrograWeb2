@@ -1,0 +1,165 @@
+﻿@model AlternativasFormVM
+@{
+    ViewBag.Title = "Alternativas";
+    var res = Model.Resultado;
+    var mejor = res?.Mejor;
+}
+<div class="page-head">
+    <div>
+        <h1>Generador de alternativas</h1>
+        <div class="meta">Ingresa solo los requisitos: Concreta calcula una variante por cada cemento del catálogo, con y sin aditivo, y las ordena.</div>
+    </div>
+</div>
+
+<div class="alert-cc info">
+    <i class="bi bi-info-circle"></i>
+    <div>Las alternativas son teóricas. Confirma la resistencia con ensayos a 7 y 28 días, porque los cementos con más adición ganan resistencia más lento.</div>
+</div>
+
+@using (Html.BeginForm("Generar", "Alternativas", FormMethod.Get))
+{
+    @Html.ValidationSummary(true)
+    <div class="panel mb-4" style="padding:var(--sp-4) var(--sp-5)">
+        <div class="row g-3 align-items-end">
+            <div class="col-6 col-md-2">
+                @Html.LabelFor(m => m.FcKgCm2, "f'c", new { @class = "form-label" })
+                <div class="input-group">
+                    @Html.TextBoxFor(m => m.FcKgCm2, new { @class = "form-control input-num", type = "number", step = "1" })
+                    <span class="input-group-text" style="min-width:0">kg/cm²</span>
+                </div>
+                @Html.ValidationMessageFor(m => m.FcKgCm2)
+            </div>
+            <div class="col-6 col-md-2">
+                @Html.LabelFor(m => m.AsentamientoPulg, new { @class = "form-label" })
+                <div class="input-group">
+                    @Html.TextBoxFor(m => m.AsentamientoPulg, new { @class = "form-control input-num", type = "number", step = "0.5" })
+                    <span class="input-group-text" style="min-width:0">pulg</span>
+                </div>
+                @Html.ValidationMessageFor(m => m.AsentamientoPulg)
+            </div>
+            <div class="col-4 col-md-2">
+                @Html.LabelFor(m => m.TamanoMaxNominal, new { @class = "form-label" })
+                @Html.DropDownListFor(m => m.TamanoMaxNominal, new SelectList(Opciones.Tmn, Model.TamanoMaxNominal), new { @class = "form-select" })
+            </div>
+            <div class="col-8 col-md-3">
+                @Html.LabelFor(m => m.IdArena, new { @class = "form-label" })
+                @Html.DropDownListFor(m => m.IdArena, Model.Arenas, "Selecciona…", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.IdArena)
+            </div>
+            <div class="col-12 col-md-3">
+                @Html.LabelFor(m => m.IdPiedra, new { @class = "form-label" })
+                @Html.DropDownListFor(m => m.IdPiedra, Model.Piedras, "Selecciona…", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.IdPiedra)
+            </div>
+            <div class="col-12 d-flex flex-wrap gap-3 align-items-end justify-content-between">
+                <div>
+                    <div class="form-label">Criterio</div>
+                    <div class="segmented" role="group" aria-label="Criterio">
+                        @foreach (var c in Criterio.Todos)
+                        {
+                            <input type="radio" class="btn-check" name="Criterio" id="crit-@c" value="@c" autocomplete="off" checked="@(Model.Criterio == c)">
+                            <label class="btn" for="crit-@c">@Criterio.Etiqueta(c)</label>
+                        }
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-shuffle"></i>Generar alternativas</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.ErrorCalculo != null)
+{
+    <div class="alert-cc danger"><i class="bi bi-x-circle"></i><div>@Model.ErrorCalculo</div></div>
+}
+
+@if (res != null)
+{
+    if (mejor != null)
+    {
+        <div class="section">
+            <div class="reco">
+                <div>
+                    <div class="eyebrow" style="color:var(--cc-brand)">Mejor alternativa · criterio @Criterio.Etiqueta(Model.Criterio)</div>
+                    <div class="reco-code" style="font-family:var(--cc-font-sans);font-size:20px">@mejor.Etiqueta</div>
+                    <p class="reco-text">@res.Justificacion</p>
+                    <div class="d-flex flex-wrap gap-4 mt-3">
+                        <span>@Html.Num(Formato.Kg(mejor.Resultado.CementoKg), "kg cemento/m³")</span>
+                        <span>@Html.Num(Formato.Soles(mejor.Resultado.CostoTotalM3), "/m³", "S/")</span>
+                        <span>@Html.Num(Formato.CO2(mejor.Resultado.HuellaCO2M3), "kg CO₂e/m³")</span>
+                        <span>a/c @Html.Num(Formato.AC(mejor.Resultado.RelacionAC))</span>
+                    </div>
+                </div>
+                <div class="reco-score">
+                    <div class="eyebrow">Puntaje</div>
+                    <span class="num">@Formato.Pct(mejor.Puntaje)</span><span class="unit">/ 100</span>
+                </div>
+            </div>
+            <div class="help mt-2">Todas las alternativas llevan la penalización de 15 puntos por no tener ensayo, así que el orden no cambia.</div>
+        </div>
+    }
+
+    if (res.Advertencias.Any())
+    {
+        <div class="alert-cc warn"><i class="bi bi-exclamation-triangle"></i><ul>@foreach (var a in res.Advertencias) {<li>@a</li>}</ul></div>
+    }
+
+    using (Html.BeginForm("Guardar", "Alternativas", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Hidden("FcKgCm2", Model.FcKgCm2)
+        @Html.Hidden("AsentamientoPulg", Formato.Css(Model.AsentamientoPulg ?? 0m))
+        @Html.Hidden("TamanoMaxNominal", Model.TamanoMaxNominal)
+        @Html.Hidden("IdArena", Model.IdArena)
+        @Html.Hidden("IdPiedra", Model.IdPiedra)
+
+        <div class="section-head flex-wrap">
+            <h2>@res.Alternativas.Count alternativas ordenadas por puntaje</h2>
+            <div class="d-flex align-items-center gap-2">
+                <label for="IdProyecto" class="form-label mb-0" style="white-space:nowrap">Guardar en proyecto</label>
+                @Html.DropDownList("IdProyecto", Model.Proyectos, "Selecciona…", new { @class = "form-select", style = "max-width:280px", required = "required" })
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="table-cc table-alternativas">
+                <thead>
+                    <tr>
+                        <th scope="col" class="num">#</th>
+                        <th scope="col">Cemento</th>
+                        <th scope="col" class="num">Adición<span class="th-unit">%</span></th>
+                        <th scope="col">Aditivo</th>
+                        <th scope="col" class="num">Cemento<span class="th-unit">kg/m³</span></th>
+                        <th scope="col" class="num">Costo<span class="th-unit">S/ por m³</span></th>
+                        <th scope="col" class="num">CO₂<span class="th-unit">kg CO₂e/m³</span></th>
+                        <th scope="col">Composición</th>
+                        <th scope="col" class="num">Puntaje</th>
+                        <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in res.Alternativas)
+                    {
+                        var barra = DosificacionVM.Desde(a.Resultado.Lineas, a.Resultado.AireAtrapadoPct).SoloBarra();
+                        <tr class="@(a == mejor ? "row-winner" : "")">
+                            <td class="num">@a.Posicion</td>
+                            <td class="col-name" style="font-weight:@(a == mejor ? "600" : "400")">@a.Cemento.Nombre</td>
+                            <td class="num">@Formato.Pct(a.Cemento.PorcentajeAdicion ?? 0m)</td>
+                            <td style="white-space:nowrap">@(a.ConAditivo ? "1 % cem." : "—")</td>
+                            <td class="num">@Formato.Kg(a.Resultado.CementoKg)</td>
+                            <td class="num">@Formato.Soles(a.Resultado.CostoTotalM3)</td>
+                            <td class="num">@Formato.CO2(a.Resultado.HuellaCO2M3)</td>
+                            <td>@Html.Partial("_MixBar", barra)</td>
+                            <td class="num">@Formato.Pct(a.Puntaje)</td>
+                            <td class="row-actions">
+                                <button type="submit" name="Seleccion" value="@(a.Cemento.IdMaterial)-@(a.ConAditivo ? 1 : 0)" class="btn btn-ghost"
+                                        title="Guardar como diseño" aria-label="Guardar @a.Etiqueta como diseño">
+                                    <i class="bi bi-download"></i>Guardar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}

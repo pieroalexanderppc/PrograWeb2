@@ -1,0 +1,22 @@
+﻿@{
+    var exito = TempData["Exito"] as string;
+    var error = TempData["Error"] as string;
+}
+@if (exito != null || error != null)
+{
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div class="toast" role="status" aria-live="polite" aria-atomic="true" data-bs-delay="4000" data-auto-toast>
+            <div class="toast-body">
+                @if (exito != null)
+                {
+                    <i class="bi bi-check-circle-fill" style="color:var(--cc-ok)"></i><span>@exito</span>
+                }
+                else
+                {
+                    <i class="bi bi-exclamation-circle-fill" style="color:var(--cc-danger)"></i><span>@error</span>
+                }
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+}

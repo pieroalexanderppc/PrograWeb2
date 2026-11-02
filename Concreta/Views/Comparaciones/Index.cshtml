@@ -1,0 +1,45 @@
+﻿@model List<Comparacion>
+@{
+    ViewBag.Title = "Comparar";
+}
+<div class="page-head">
+    <div>
+        <h1>Comparaciones</h1>
+        <div class="meta">Compara de 2 a 4 diseños y obtén una recomendación justificada por costo, CO₂ o ambos.</div>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-primary" href="@Url.Action("Create")"><i class="bi bi-layout-split"></i>Nueva comparación</a>
+    </div>
+</div>
+
+<div class="table-wrap">
+    <table class="table-cc">
+        <thead>
+            <tr>
+                <th scope="col">Comparación</th>
+                <th scope="col">Criterio</th>
+                <th scope="col" class="num">Diseños</th>
+                <th scope="col">Recomendado</th>
+                <th scope="col">Fecha</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="6" class="empty">Aún no hay comparaciones.<a class="btn btn-primary btn-sm" href="@Url.Action("Create")">Comparar diseños</a></td></tr>
+            }
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td><a href="@Url.Action("Details", new { id = c.IdComparacion })" style="font-weight:500">@c.Nombre</a></td>
+                    <td>@Criterio.Etiqueta(c.Criterio)</td>
+                    <td class="num">@c.Detalles.Count</td>
+                    <td>@if (c.DisenoRecomendado != null) {<span class="code">@c.DisenoRecomendado.Codigo</span>} else {<span class="text-muted">Ninguno</span>}</td>
+                    <td class="num" style="text-align:left">@Formato.Fecha(c.FechaComparacion)</td>
+                    <td class="row-actions"><a class="btn btn-ghost" href="@Url.Action("Details", new { id = c.IdComparacion })"><i class="bi bi-eye"></i>Ver</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
