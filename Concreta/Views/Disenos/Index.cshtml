@@ -1,4 +1,4 @@
-﻿@model List<DisenoFilaVM>
+@model List<DisenoFilaVM>
 @{
     ViewBag.Title = "Diseños";
     var proyectos = (List<Proyecto>)ViewBag.Proyectos;
@@ -21,15 +21,19 @@
     }
 </div>
 
-<form method="get" class="d-flex flex-wrap gap-2 mb-3">
-    <select name="proyecto" class="form-select" style="max-width:320px" aria-label="Filtrar por proyecto" onchange="this.form.submit()">
+<form method="get" class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+    <div class="input-group" style="max-width:280px">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="search" id="filtroRapido" class="form-control" placeholder="Buscar código, cemento..." autocomplete="off">
+    </div>
+    <select name="proyecto" class="form-select" style="max-width:300px" aria-label="Filtrar por proyecto" onchange="this.form.submit()">
         <option value="">Todos los proyectos</option>
         @foreach (var p in proyectos)
         {
             <option value="@p.IdProyecto" selected="@(proyectoSel == p.IdProyecto)">@p.Nombre</option>
         }
     </select>
-    <select name="estado" class="form-select" style="max-width:200px" aria-label="Filtrar por estado" onchange="this.form.submit()">
+    <select name="estado" class="form-select" style="max-width:180px" aria-label="Filtrar por estado" onchange="this.form.submit()">
         <option value="">Todos los estados</option>
         @foreach (var e in estados)
         {
@@ -82,3 +86,20 @@
         </tbody>
     </table>
 </div>
+
+@section Scripts {
+    <script>
+        var inputFiltro = document.getElementById('filtroRapido');
+        if (inputFiltro) {
+            inputFiltro.addEventListener('input', function () {
+                var query = this.value.toLowerCase().trim();
+                var filas = document.querySelectorAll('tbody tr');
+                filas.forEach(function (f) {
+                    if (f.querySelector('.empty')) return;
+                    var textoFila = f.innerText.toLowerCase();
+                    f.style.display = (query === '' || textoFila.indexOf(query) >= 0) ? '' : 'none';
+                });
+            });
+        }
+    </script>
+}

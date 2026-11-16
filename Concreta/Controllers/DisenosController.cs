@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +15,7 @@ namespace Concreta.Controllers
     {
         private readonly IDisenoAciService _aci = new DisenoAciService();
         private readonly ICostoCO2Service _costo = new CostoCO2Service();
+        private readonly IIaService _ia = new GeminiIaService();
 
         public async Task<ActionResult> Index(int? proyecto, string estado)
         {
@@ -164,6 +165,23 @@ namespace Concreta.Controllers
                 Resistencia28d = DisenoEstados.Resistencia28d(d),
                 EstadoResistencia = DisenoEstados.Resistencia(d)
             });
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> AnalizarIa(int id)
+        {
+            var d = await Db.Disenos.ConDetalle()
+                .Include(x => x.Proyecto)
+                .Include(x => x.Ensayos)
+                .FirstOrDefaultAsync(x => x.IdDiseno == id);
+
+            if (d == null) return HttpNotFound();
+
+            var dosificacion = DisenoConsultas.Dosificacion(d);
+            var r28 = DisenoEstados.Resistencia28d(d);
+
+            var dictamen = await _ia.GenerarDictamenDisenoAsync(d, dosificacion, r28);
+            return Json(new { ok = true, dictamen });
         }
 
         private static void Copiar(DisenoMezcla d, DisenoFormVM vm)

@@ -1,4 +1,4 @@
-﻿<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -58,6 +58,7 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
@@ -129,6 +130,7 @@
     <Compile Include="Services\DisenoConsultas.cs" />
     <Compile Include="Services\DisenoDatosService.cs" />
     <Compile Include="Services\DisenoEstados.cs" />
+    <Compile Include="Services\GeminiIaService.cs" />
     <Compile Include="Services\GeneradorAlternativasService.cs" />
     <Compile Include="Services\HistorialCemento.cs" />
     <Compile Include="Services\RecomendacionService.cs" />
@@ -162,6 +164,7 @@
     <Content Include="Global.asax" />
     <Content Include="Scripts\concreta.js" />
     <Content Include="Scripts\lib\bootstrap.bundle.min.js" />
+    <Content Include="Scripts\lib\chart.umd.min.js" />
     <Content Include="Scripts\lib\jquery.min.js" />
     <Content Include="Scripts\lib\jquery.validate.min.js" />
     <Content Include="Scripts\lib\jquery.validate.unobtrusive.min.js" />
@@ -171,7 +174,9 @@
     <Content Include="Views\Comparaciones\Create.cshtml" />
     <Content Include="Views\Comparaciones\Details.cshtml" />
     <Content Include="Views\Comparaciones\Index.cshtml" />
+    <Content Include="Views\Cuenta\Landing.cshtml" />
     <Content Include="Views\Cuenta\Login.cshtml" />
+    <Content Include="Views\Cuenta\Registro.cshtml" />
     <Content Include="Views\Disenos\Create.cshtml" />
     <Content Include="Views\Disenos\Details.cshtml" />
     <Content Include="Views\Disenos\Index.cshtml" />

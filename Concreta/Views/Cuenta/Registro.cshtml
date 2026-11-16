@@ -1,0 +1,211 @@
+@model RegistroVM
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crear Cuenta · Concreta</title>
+    @Html.Partial("_Estilos")
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <!-- Panel Izquierdo / Formulario -->
+        <div class="auth-card-panel">
+            <div class="auth-box auth-box-lg">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <a href="@Url.Action("Landing", "Cuenta")" class="auth-brand-badge mb-0">
+                        <span class="brand-mark"></span> CONCRETA
+                    </a>
+                    <a href="@Url.Action("Landing", "Cuenta")" class="small text-muted text-decoration-none">
+                        <i class="bi bi-arrow-left"></i> Inicio
+                    </a>
+                </div>
+
+                <h2 class="fw-bold mb-1" style="color:var(--cc-900); font-size:24px;">Crear nueva cuenta</h2>
+                <p class="text-muted small mb-4">Selecciona tu perfil profesional para comenzar a usar Concreta.</p>
+
+                @using (Html.BeginForm("Registro", "Cuenta", FormMethod.Post, new { novalidate = "novalidate", id = "formRegistro" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger py-2 small" })
+
+                    <!-- Selector Visual de Rol -->
+                    <label class="form-label fw-semibold small mb-2">Perfil profesional <span class="text-danger">*</span></label>
+                    <div class="role-cards-grid">
+                        <div class="role-card" data-rol-id="2" id="cardRolIngeniero">
+                            <div class="role-check"><i class="bi bi-check"></i></div>
+                            <div class="role-icon"><i class="bi bi-briefcase"></i></div>
+                            <div class="role-name">Ingeniero</div>
+                            <div class="role-desc">Diseño ACI, tandas, costos y dictamen IA</div>
+                        </div>
+
+                        <div class="role-card" data-rol-id="3" id="cardRolLaboratorista">
+                            <div class="role-check"><i class="bi bi-check"></i></div>
+                            <div class="role-icon"><i class="bi bi-eyedropper"></i></div>
+                            <div class="role-name">Laboratorista</div>
+                            <div class="role-desc">Ensayos de rotura, slump y calidad</div>
+                        </div>
+                    </div>
+
+                    <!-- Input oculto para IdRol que se actualiza con las tarjetas -->
+                    @Html.HiddenFor(m => m.IdRol, new { id = "inputIdRol" })
+                    @Html.ValidationMessageFor(m => m.IdRol, "", new { @class = "text-danger small d-block mb-3" })
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-6">
+                            @Html.LabelFor(m => m.Nombres, new { @class = "form-label small fw-semibold" })
+                            @Html.TextBoxFor(m => m.Nombres, new { @class = "form-control form-control-sm", placeholder = "Carlos" })
+                            @Html.ValidationMessageFor(m => m.Nombres, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="col-sm-6">
+                            @Html.LabelFor(m => m.Apellidos, new { @class = "form-label small fw-semibold" })
+                            @Html.TextBoxFor(m => m.Apellidos, new { @class = "form-control form-control-sm", placeholder = "Mamani" })
+                            @Html.ValidationMessageFor(m => m.Apellidos, "", new { @class = "text-danger small" })
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.Correo, new { @class = "form-label small fw-semibold" })
+                        @Html.TextBoxFor(m => m.Correo, new { @class = "form-control form-control-sm", type = "email", placeholder = "usuario@empresa.com", autocomplete = "username" })
+                        @Html.ValidationMessageFor(m => m.Correo, "", new { @class = "text-danger small" })
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-sm-6">
+                            @Html.LabelFor(m => m.Contrasena, new { @class = "form-label small fw-semibold" })
+                            <div class="input-password-wrapper">
+                                @Html.PasswordFor(m => m.Contrasena, new { @class = "form-control form-control-sm", id = "pwdInput", autocomplete = "new-password", placeholder = "Mín. 6 caracteres" })
+                                <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('pwdInput', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.Contrasena, "", new { @class = "text-danger small" })
+                        </div>
+
+                        <div class="col-sm-6">
+                            @Html.LabelFor(m => m.ConfirmarContrasena, new { @class = "form-label small fw-semibold" })
+                            <div class="input-password-wrapper">
+                                @Html.PasswordFor(m => m.ConfirmarContrasena, new { @class = "form-control form-control-sm", id = "pwdConfirmInput", autocomplete = "new-password", placeholder = "Repite tu contraseña" })
+                                <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('pwdConfirmInput', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ConfirmarContrasena, "", new { @class = "text-danger small" })
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" style="height:42px;">
+                        <i class="bi bi-person-check"></i> Completar Registro
+                    </button>
+                }
+
+                <div class="text-center mt-4 pt-3 border-top">
+                    <span class="text-muted small">¿Ya tienes una cuenta registrada?</span>
+                    <a href="@Url.Action("Login", "Cuenta")" class="fw-semibold text-success ms-1 small" style="color:var(--cc-brand) !important;">
+                        Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho / Showcase Visual -->
+        <div class="auth-showcase">
+            <div class="showcase-badge">
+                <i class="bi bi-shield-check"></i> Plataforma ACI 211.1
+            </div>
+
+            <h2 class="showcase-title">
+                Precisión de cálculo y sostenibilidad en cada metro cúbico.
+            </h2>
+
+            <p class="showcase-desc">
+                Regístrate con tu perfil técnico para acceder a herramientas avanzadas de dosificación, corrección por humedad y evaluación estadística de roturas.
+            </p>
+
+            <div class="showcase-features">
+                <div class="showcase-feature-item">
+                    <div class="showcase-icon-box"><i class="bi bi-sliders"></i></div>
+                    <div>
+                        <strong class="d-block small text-white">Diseños ACI 211.1 Instantáneos</strong>
+                        <span class="text-white-50 small">Cálculo de volúmenes absolutos y relación a/c en segundos.</span>
+                    </div>
+                </div>
+
+                <div class="showcase-feature-item">
+                    <div class="showcase-icon-box"><i class="bi bi-stars"></i></div>
+                    <div>
+                        <strong class="d-block small text-white">Inteligencia Artificial Integrada</strong>
+                        <span class="text-white-50 small">Dictámenes ejecutivos sobre trabajabilidad, f'cr y huella de carbono.</span>
+                    </div>
+                </div>
+
+                <div class="showcase-feature-item">
+                    <div class="showcase-icon-box"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div>
+                        <strong class="d-block small text-white">Monitoreo de Resistencia en Tiempo Real</strong>
+                        <span class="text-white-50 small">Curvas de madurez de probetas ensayadas en laboratorio.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="small text-white-50">
+                <i class="bi bi-info-circle me-1"></i> El rol de Administrador se asigna exclusivamente de forma institucional.
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_Scripts")
+    <script>
+        // Manejador del selector de roles visual
+        (function () {
+            const inputRol = document.getElementById('inputIdRol');
+            const cards = document.querySelectorAll('.role-card');
+
+            function seleccionarRol(rolId) {
+                inputRol.value = rolId;
+                cards.forEach(card => {
+                    if (card.getAttribute('data-rol-id') === String(rolId)) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
+            }
+
+            cards.forEach(card => {
+                card.addEventListener('click', function () {
+                    const rolId = this.getAttribute('data-rol-id');
+                    seleccionarRol(rolId);
+                });
+            });
+
+            // Si ya hay un valor seleccionado previamente (por error de validación)
+            const valorActual = inputRol.value;
+            if (valorActual && valorActual !== '0') {
+                seleccionarRol(valorActual);
+            } else {
+                // Por defecto preseleccionar Ingeniero (rol 2)
+                seleccionarRol('2');
+            }
+        })();
+
+        // Alternar visibilidad de contraseña
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
+</body>
+</html>

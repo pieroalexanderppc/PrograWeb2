@@ -1,7 +1,6 @@
-﻿@model LoginVM
+@model LoginVM
 @{
     Layout = null;
-    bool hayFoto = System.IO.File.Exists(Server.MapPath("~/Content/img/concreto.jpg"));
 }
 <!DOCTYPE html>
 <html lang="es-PE">
@@ -10,54 +9,218 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Ingresar · Concreta</title>
     @Html.Partial("_Estilos")
+    <style>
+        .demo-card-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--cc-300);
+            border-radius: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .demo-card-btn:hover {
+            border-color: var(--cc-brand);
+            background: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        }
+        .demo-card-btn .demo-role {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--cc-900);
+        }
+        .demo-card-btn .demo-email {
+            font-size: 11px;
+            color: var(--cc-500);
+            font-family: var(--cc-font-mono);
+        }
+    </style>
 </head>
-<body>
-    <div class="login">
-        <div class="login-form">
-            <div>
-                <div class="brand" style="padding:0;border:0;height:auto;margin-bottom:40px"><span class="brand-mark"></span>CONCRETA</div>
-                <h1 style="margin-bottom:6px">Ingresa a Concreta</h1>
-                <p class="meta" style="margin-bottom:28px">Diseño de mezclas de concreto con cementos adicionados.</p>
+<body class="auth-page">
+    <div class="auth-container">
+        <!-- Formulario de Inicio de Sesión -->
+        <div class="auth-card-panel">
+            <div class="auth-box">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <a href="@Url.Action("Landing", "Cuenta")" class="auth-brand-badge mb-0">
+                        <span class="brand-mark"></span> CONCRETA
+                    </a>
+                    <a href="@Url.Action("Landing", "Cuenta")" class="small text-muted text-decoration-none">
+                        <i class="bi bi-arrow-left"></i> Conoce Concreta
+                    </a>
+                </div>
 
-                @using (Html.BeginForm("Login", "Cuenta", FormMethod.Post, new { novalidate = "novalidate" }))
+                <h2 class="fw-bold mb-1" style="color:var(--cc-900); font-size:24px;">Iniciar sesión</h2>
+                <p class="text-muted small mb-4">Ingresa tus credenciales para acceder a tus proyectos de mezclas.</p>
+
+                @using (Html.BeginForm("Login", "Cuenta", FormMethod.Post, new { novalidate = "novalidate", id = "formLogin" }))
                 {
                     @Html.AntiForgeryToken()
                     @Html.HiddenFor(m => m.ReturnUrl)
-                    @Html.ValidationSummary(true)
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger py-2 small" })
 
                     <div class="mb-3">
-                        @Html.LabelFor(m => m.Correo, new { @class = "form-label" })
-                        @Html.TextBoxFor(m => m.Correo, new { @class = "form-control", type = "email", autocomplete = "username", autofocus = "autofocus", placeholder = "nombre@concreta.pe" })
-                        @Html.ValidationMessageFor(m => m.Correo)
+                        @Html.LabelFor(m => m.Correo, new { @class = "form-label small fw-semibold" })
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+                            @Html.TextBoxFor(m => m.Correo, new { @class = "form-control", id = "inputCorreo", type = "email", autocomplete = "username", autofocus = "autofocus", placeholder = "nombre@concreta.pe" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Correo, "", new { @class = "text-danger small" })
                     </div>
+
                     <div class="mb-3">
-                        @Html.LabelFor(m => m.Contrasena, new { @class = "form-label" })
-                        @Html.PasswordFor(m => m.Contrasena, new { @class = "form-control", autocomplete = "current-password" })
-                        @Html.ValidationMessageFor(m => m.Contrasena)
+                        <div class="d-flex justify-content-between align-items-center">
+                            @Html.LabelFor(m => m.Contrasena, new { @class = "form-label small fw-semibold mb-1" })
+                        </div>
+                        <div class="input-password-wrapper">
+                            @Html.PasswordFor(m => m.Contrasena, new { @class = "form-control", id = "inputContrasena", autocomplete = "current-password", placeholder = "••••••••" })
+                            <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('inputContrasena', this)" title="Ver contraseña">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Contrasena, "", new { @class = "text-danger small" })
                     </div>
-                    <div class="form-check mb-4">
-                        @Html.CheckBoxFor(m => m.Recordar, new { @class = "form-check-input" })
-                        @Html.LabelFor(m => m.Recordar, new { @class = "form-check-label", style = "font-size:14px" })
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            @Html.CheckBoxFor(m => m.Recordar, new { @class = "form-check-input", id = "checkRecordar" })
+                            @Html.LabelFor(m => m.Recordar, new { @class = "form-check-label small text-secondary", @for = "checkRecordar" })
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" style="height:42px;">
+                        <i class="bi bi-box-arrow-in-right"></i> Ingresar al Sistema
+                    </button>
                 }
+
+                <!-- Enlace a Registro -->
+                <div class="text-center mt-3 pt-3 border-top">
+                    <span class="text-muted small">¿No tienes una cuenta aún?</span>
+                    <a href="@Url.Action("Registro", "Cuenta")" class="fw-semibold text-success ms-1 small" style="color:var(--cc-brand) !important;">
+                        Regístrate aquí
+                    </a>
+                </div>
 
                 @if (HttpContext.Current.IsDebuggingEnabled)
                 {
-                    <div class="demo-users">
-                        Usuarios de prueba (contraseña <code>Concreta123*</code>):<br />
-                        <code>admin@@concreta.pe</code> · <code>cmamani@@concreta.pe</code> · <code>lquispe@@concreta.pe</code>
+                    <!-- Accesos rápidos para evaluadores y pruebas -->
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small fw-semibold text-muted text-uppercase" style="font-size:11px; letter-spacing:0.04em;">
+                                <i class="bi bi-lightning-charge-fill text-warning"></i> Cuentas de demostración
+                            </span>
+                            <span class="badge bg-secondary-subtle text-secondary small" style="font-size:10px;">1 clic para autocompletar</span>
+                        </div>
+
+                        <div class="d-flex flex-column gap-2">
+                            <button type="button" class="demo-card-btn" onclick="rellenarDemo('admin@concreta.pe')">
+                                <div>
+                                    <div class="demo-role"><i class="bi bi-shield-lock text-primary me-1"></i> Administrador</div>
+                                    <div class="demo-email">admin@concreta.pe</div>
+                                </div>
+                                <span class="badge bg-light text-dark border small">Usar</span>
+                            </button>
+
+                            <button type="button" class="demo-card-btn" onclick="rellenarDemo('cmamani@concreta.pe')">
+                                <div>
+                                    <div class="demo-role"><i class="bi bi-briefcase text-success me-1"></i> Ingeniero (Diseño)</div>
+                                    <div class="demo-email">cmamani@concreta.pe</div>
+                                </div>
+                                <span class="badge bg-light text-dark border small">Usar</span>
+                            </button>
+
+                            <button type="button" class="demo-card-btn" onclick="rellenarDemo('lquispe@concreta.pe')">
+                                <div>
+                                    <div class="demo-role"><i class="bi bi-eyedropper text-info me-1"></i> Laboratorista (Ensayos)</div>
+                                    <div class="demo-email">lquispe@concreta.pe</div>
+                                </div>
+                                <span class="badge bg-light text-dark border small">Usar</span>
+                            </button>
+                        </div>
                     </div>
                 }
             </div>
         </div>
-        <div class="login-side" style="@(hayFoto ? "background-image:url('" + Url.Content("~/Content/img/concreto.jpg") + "')" : null)">
-            @if (!hayFoto)
-            {
-                <p>Diseña mezclas que cumplen, cuestan menos y emiten menos.</p>
-            }
+
+        <!-- Panel Lateral / Showcase Animado -->
+        <div class="auth-showcase">
+            <div class="showcase-badge">
+                <i class="bi bi-stars"></i> Potenciado con Google Gemini AI
+            </div>
+
+            <h2 class="showcase-title">
+                Tecnología del concreto para obras más sostenibles.
+            </h2>
+
+            <p class="showcase-desc">
+                Diseño volumétrico ACI 211.1, cálculo instantáneo de huella de carbono, optimización económica de mezclas y seguimiento estadístico de ensayos de compresión.
+            </p>
+
+            <div class="showcase-features">
+                <div class="showcase-feature-item">
+                    <div class="showcase-icon-box"><i class="bi bi-tree"></i></div>
+                    <div>
+                        <strong class="d-block small text-white">-40% Emisiones CO₂</strong>
+                        <span class="text-white-50 small">Sustitución técnica de clínker por puzolana natural.</span>
+                    </div>
+                </div>
+
+                <div class="showcase-feature-item">
+                    <div class="showcase-icon-box"><i class="bi bi-calculator"></i></div>
+                    <div>
+                        <strong class="d-block small text-white">Calculadora de Tandas de Obra</strong>
+                        <span class="text-white-50 small">Dosificación corregida por humedad en bolsas, baldes y carretillas.</span>
+                    </div>
+                </div>
+
+                <div class="showcase-feature-item">
+                    <div class="showcase-icon-box"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <strong class="d-block small text-white">Cumplimiento Riguroso</strong>
+                        <span class="text-white-50 small">Normas ACI 211.1, NTP 334.090 y ASTM C595 / C39.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 text-white-50 small pt-2">
+                <span><i class="bi bi-mortarboard me-1"></i> Programación Web II</span>
+                <span>•</span>
+                <span>Hackathon Innova Sur 2026</span>
+            </div>
         </div>
     </div>
+
     @Html.Partial("_Scripts")
+    <script>
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+
+        function rellenarDemo(correo) {
+            document.getElementById('inputCorreo').value = correo;
+            document.getElementById('inputContrasena').value = 'Concreta123*';
+            // Efecto visual de resaltado
+            const btnSubmit = document.querySelector('button[type="submit"]');
+            btnSubmit.classList.add('btn-success');
+            setTimeout(() => {
+                btnSubmit.classList.remove('btn-success');
+            }, 600);
+        }
+    </script>
 </body>
 </html>

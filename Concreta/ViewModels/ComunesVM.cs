@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
 using Concreta.Services;
 
 namespace Concreta.ViewModels
@@ -20,6 +21,43 @@ namespace Concreta.ViewModels
         public bool Recordar { get; set; }
 
         public string ReturnUrl { get; set; }
+    }
+
+    public class RegistroVM
+    {
+        [Required(ErrorMessage = "Ingresa tus nombres.")]
+        [StringLength(60, ErrorMessage = "Los nombres no pueden exceder 60 caracteres.")]
+        [Display(Name = "Nombres")]
+        public string Nombres { get; set; }
+
+        [Required(ErrorMessage = "Ingresa tus apellidos.")]
+        [StringLength(60, ErrorMessage = "Los apellidos no pueden exceder 60 caracteres.")]
+        [Display(Name = "Apellidos")]
+        public string Apellidos { get; set; }
+
+        [Required(ErrorMessage = "Ingresa tu correo electrónico.")]
+        [EmailAddress(ErrorMessage = "Ingresa un correo válido.")]
+        [StringLength(100, ErrorMessage = "El correo no puede exceder 100 caracteres.")]
+        [Display(Name = "Correo electrónico")]
+        public string Correo { get; set; }
+
+        [Required(ErrorMessage = "Selecciona tu rol profesional.")]
+        [Display(Name = "Rol profesional")]
+        public int IdRol { get; set; }
+
+        [Required(ErrorMessage = "Ingresa una contraseña.")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres.")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Contraseña")]
+        public string Contrasena { get; set; }
+
+        [Required(ErrorMessage = "Confirma tu contraseña.")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirmar contraseña")]
+        [System.ComponentModel.DataAnnotations.Compare("Contrasena", ErrorMessage = "Las contraseñas no coinciden.")]
+        public string ConfirmarContrasena { get; set; }
+
+        public List<SelectListItem> RolesDisponibles { get; set; } = new List<SelectListItem>();
     }
 
     /// <summary>Una métrica de la tira de KPIs.</summary>

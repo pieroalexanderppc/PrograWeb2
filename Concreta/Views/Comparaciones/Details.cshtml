@@ -1,4 +1,4 @@
-﻿@model ComparacionDetalleVM
+@model ComparacionDetalleVM
 @{
     var c = Model.Comparacion;
     ViewBag.Title = c.Nombre;
@@ -32,7 +32,10 @@
     {
         <div class="reco">
             <div>
-                <div class="eyebrow" style="color:var(--cc-brand)">Recomendado</div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="eyebrow" style="color:var(--cc-brand)">Recomendado</span>
+                    <span class="badge bg-light text-dark border" style="font-size:11px">Algoritmo ACI</span>
+                </div>
                 <a class="reco-code d-block" href="@Url.Action("Details", "Disenos", new { id = Model.Recomendada.Diseno.IdDiseno })">@Model.Recomendada.Diseno.Codigo</a>
                 <p class="reco-text">@Formato.Quimica(c.Justificacion)</p>
             </div>
@@ -46,6 +49,27 @@
     {
         <div class="alert-cc warn"><i class="bi bi-exclamation-triangle"></i><div>@Formato.Quimica(c.Justificacion)</div></div>
     }
+
+    <div class="ai-panel mt-3">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="ai-badge"><i class="bi bi-stars"></i> IA Concreta</span>
+                <span style="font-weight:600;font-size:14px">Justificación Ejecutiva & Análisis Multidimensional</span>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnIaComp">
+                <i class="bi bi-robot"></i> <span id="btnTextoIaComp">Generar con IA</span>
+            </button>
+        </div>
+        <div id="cargandoIaComp" class="text-center py-3" style="display:none">
+            <div class="spinner-border text-success" role="status" style="width:1.5rem;height:1.5rem">
+                <span class="visually-hidden">Generando informe ejecutivo...</span>
+            </div>
+            <div class="meta mt-1" style="font-size:13px">Comparando impacto ambiental, durabilidad y costo con Gemini...</div>
+        </div>
+        <div id="resultadoIaComp" class="ai-content mt-2 p-3 bg-white rounded border" style="display:none">
+            <div id="textoIaComp"></div>
+        </div>
+    </div>
 </div>
 
 <div class="section">
@@ -128,3 +152,110 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        var btnIaComp = document.getElementById('btnIaComp');
+        var btnTextoIaComp = document.getElementById('btnTextoIaComp');
+        var cargandoIaComp = document.getElementById('cargandoIaComp');
+        var resultadoIaComp = document.getElementById('resultadoIaComp');
+        var textoIaComp = document.getElementById('textoIaComp');
+
+        function renderizarMarkdownIa(texto) {
+            if (!texto) return '';
+            var src = String(texto).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+            src = src.replace(/^(?:Como\s+[^:\n]+[:\.\-]|A\s+continuación[^:\n]+[:\.\-]|Presento\s+el\s+dictamen[^:\n]+[:\.\-]|En\s+calidad\s+de[^:\n]+[:\.\-])\s*/i, '');
+            var idxInicio = src.search(/(?:#{1,4}\s*1\.|\b1\.\s+[A-ZÁÉÍÓÚ]|###\s+Opción|###|\bOpción)/i);
+            if (idxInicio > 0 && idxInicio < 400) {
+                src = src.substring(idxInicio);
+            }
+
+            src = src.replace(/([^\n])\s*(#{1,4}\s*)/g, '$1\n\n$2');
+            src = src.replace(/([^\n])\s*(\b[1-4]\.\s+[A-ZÁÉÍÓÚ])/g, '$1\n\n$2');
+            src = src.replace(/([^\n])\s*([-\*•]\s*\*\*)/g, '$1\n$2');
+            src = src.replace(/([^\n])\s*([-\*•]\s+[A-ZÁÉÍÓÚ])/g, '$1\n$2');
+
+            src = src.replace(/^###\s*(.*$)/gim, '<h5 class="ai-heading">$1</h5>');
+            src = src.replace(/^##\s*(.*$)/gim, '<h4 class="ai-heading">$1</h4>');
+            src = src.replace(/^#\s*(.*$)/gim, '<h4 class="ai-heading">$1</h4>');
+            src = src.replace(/^(\d+\.\s+[^\n<]+)/gim, '<h4 class="ai-heading">$1</h4>');
+
+            src = src.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            var lineas = src.split('\n');
+            var resultado = [];
+            var enLista = false;
+
+            for (var i = 0; i < lineas.length; i++) {
+                var linea = lineas[i].trim();
+                if (!linea) {
+                    if (enLista) { resultado.push('</ul>'); enLista = false; }
+                    continue;
+                }
+
+                if (linea.indexOf('<h4') === 0 || linea.indexOf('<h5') === 0) {
+                    if (enLista) { resultado.push('</ul>'); enLista = false; }
+                    linea = linea.replace(/\*/g, '').replace(/#{1,4}/g, '').trim();
+                    resultado.push(linea);
+                    continue;
+                }
+
+                var matchVineta = linea.match(/^[\*\-\•\+]\s*(.*)$/);
+                if (matchVineta) {
+                    if (!enLista) { resultado.push('<ul class="ai-bullet-list">'); enLista = true; }
+                    var contenido = matchVineta[1].trim();
+                    contenido = contenido.replace(/^[\*\-\•\+]\s*/, '');
+                    contenido = contenido.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                    if (contenido.indexOf('<strong>') === -1) {
+                        contenido = contenido.replace(/^([^:]{3,45}:)/, '<strong>$1</strong>');
+                    }
+                    contenido = contenido.replace(/\*/g, '');
+                    resultado.push('<li>' + contenido + '</li>');
+                } else {
+                    if (enLista) { resultado.push('</ul>'); enLista = false; }
+                    linea = linea.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                    linea = linea.replace(/\*/g, '');
+                    resultado.push('<p class="ai-para">' + linea + '</p>');
+                }
+            }
+
+            if (enLista) resultado.push('</ul>');
+            return resultado.join('\n');
+        }
+
+        if (btnIaComp) {
+            btnIaComp.addEventListener('click', function () {
+                btnIaComp.disabled = true;
+                btnTextoIaComp.textContent = 'Generando...';
+                cargandoIaComp.style.display = 'block';
+                resultadoIaComp.style.display = 'none';
+
+                fetch('@Url.Action("JustificacionIa", "Comparaciones", new { id = c.IdComparacion })', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    cargandoIaComp.style.display = 'none';
+                    btnIaComp.disabled = false;
+                    btnTextoIaComp.textContent = 'Regenerar con IA';
+                    if (data.ok) {
+                        textoIaComp.innerHTML = renderizarMarkdownIa(data.justificacion);
+                        resultadoIaComp.style.display = 'block';
+                    } else {
+                        textoIaComp.innerHTML = '<div class="alert alert-danger">' + (data.error || 'Error al consultar la IA.') + '</div>';
+                        resultadoIaComp.style.display = 'block';
+                    }
+                })
+                .catch(function (err) {
+                    cargandoIaComp.style.display = 'none';
+                    btnIaComp.disabled = false;
+                    btnTextoIaComp.textContent = 'Generar con IA';
+                    textoIaComp.innerHTML = '<div class="alert alert-danger">Error de red: ' + err.message + '</div>';
+                    resultadoIaComp.style.display = 'block';
+                });
+            });
+        }
+    </script>
+}

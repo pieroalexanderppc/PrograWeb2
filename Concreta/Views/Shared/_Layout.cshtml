@@ -1,4 +1,4 @@
-﻿@{
+@{
     var usuario = User.Concreta();
     string seccion = ViewBag.Seccion as string;
     string seccionUrl = ViewBag.SeccionUrl as string;
@@ -61,6 +61,8 @@
                     </button>
                     <div class="dropdown-menu dropdown-menu-end">
                         <span class="dropdown-item-text text-muted" style="font-size:13px">@User.Identity.Name</span>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="@Url.Action("Landing", "Cuenta")" target="_blank"><i class="bi bi-globe me-2"></i>Ver presentación web</a>
                         <div class="dropdown-divider"></div>
                         @using (Html.BeginForm("Logout", "Cuenta", FormMethod.Post))
                         {

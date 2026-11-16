@@ -1,0 +1,491 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Concreta · Diseño Inteligente de Mezclas de Concreto ACI 211.1</title>
+    @Html.Partial("_Estilos")
+    <style>
+        .hero-preview-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            border: 1px solid rgba(31, 77, 63, 0.15);
+            box-shadow: 0 20px 50px rgba(31, 77, 63, 0.12);
+            padding: 24px;
+            backdrop-filter: blur(8px);
+        }
+        .mix-preview-bar {
+            height: 28px;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            margin: 14px 0 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .pulse-badge {
+            animation: pulseGlow 2.5s infinite;
+        }
+        .hero-float-badge {
+            position: absolute;
+            background: #fff;
+            border-radius: 12px;
+            padding: 10px 16px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            border: 1px solid var(--cc-200);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="landing-body">
+
+    <!-- Navegación Pública -->
+    <header class="landing-navbar">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a href="@Url.Action("Landing", "Cuenta")" class="brand" style="border:0; height:auto; padding:0;">
+                <span class="brand-mark"></span>
+                <span>CONCRETA</span>
+            </a>
+
+            <nav class="d-none d-md-flex align-items-center gap-4">
+                <a href="#caracteristicas" class="text-decoration-none text-secondary fw-medium">Características</a>
+                <a href="#metodologia" class="text-decoration-none text-secondary fw-medium">Metodología ACI</a>
+                <a href="#roles" class="text-decoration-none text-secondary fw-medium">Perfiles</a>
+                <a href="#impacto" class="text-decoration-none text-secondary fw-medium">Sostenibilidad</a>
+            </nav>
+
+            <div class="d-flex align-items-center gap-2">
+                <a href="@Url.Action("Login", "Cuenta")" class="btn btn-secondary btn-sm px-3">
+                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                </a>
+                <a href="@Url.Action("Registro", "Cuenta")" class="btn btn-primary btn-sm px-3">
+                    <i class="bi bi-person-plus"></i> Registrarse
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="landing-hero">
+        <div class="container position-relative">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 anim-fade-up">
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white border border-success-subtle mb-3 shadow-sm">
+                        <span class="badge bg-success rounded-pill pulse-badge" style="background-color: var(--cc-brand) !important;">NUEVO</span>
+                        <span class="small fw-semibold text-secondary">Norma ACI 211.1 + IA con Google Gemini</span>
+                    </div>
+
+                    <h1 class="landing-title">
+                        Diseño de mezclas de concreto <span class="highlight">sostenibles</span> y de alto rendimiento
+                    </h1>
+
+                    <p class="landing-lead">
+                        Calcula dosificaciones exactas, optimiza la incorporación de <strong>cementos adicionados puzolánicos</strong>, reduce la huella de carbono hasta un <strong>40%</strong> y obtén dictámenes técnicos con Inteligencia Artificial.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        <a href="@Url.Action("Registro", "Cuenta")" class="btn btn-primary px-4 py-2" style="height:44px; font-size:15px;">
+                            <i class="bi bi-rocket-takeoff"></i> Crear cuenta gratuita
+                        </a>
+                        <a href="@Url.Action("Login", "Cuenta")" class="btn btn-secondary px-4 py-2" style="height:44px; font-size:15px;">
+                            <i class="bi bi-box-arrow-in-right"></i> Acceder a la plataforma
+                        </a>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-3 pt-2">
+                        <div class="stat-pill">
+                            <i class="bi bi-tree text-success fs-5"></i>
+                            <div>
+                                <span class="num">-38%</span>
+                                <span class="text-muted ms-1 small">Huella CO₂</span>
+                            </div>
+                        </div>
+                        <div class="stat-pill">
+                            <i class="bi bi-cash-stack text-success fs-5"></i>
+                            <div>
+                                <span class="num">S/ 42.50</span>
+                                <span class="text-muted ms-1 small">Ahorro prom./m³</span>
+                            </div>
+                        </div>
+                        <div class="stat-pill">
+                            <i class="bi bi-shield-check text-success fs-5"></i>
+                            <div>
+                                <span class="num">100%</span>
+                                <span class="text-muted ms-1 small">Cumplimiento f'c</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta Interactiva / Preview -->
+                <div class="col-lg-6 anim-fade-up anim-delay-2 position-relative">
+                    <div class="hero-preview-card">
+                        <div class="d-flex justify-content-between align-items-center pb-3 border-bottom mb-3">
+                            <div>
+                                <span class="badge bg-light text-dark border px-2 py-1 small">DISEÑO ACTIVO</span>
+                                <h5 class="fw-bold mb-0 mt-1">Mezcla f'c = 280 kg/cm²</h5>
+                                <small class="text-muted">Cemento Puzolánico Tipo IP (30% Adición)</small>
+                            </div>
+                            <span class="ai-badge"><i class="bi bi-stars"></i> IA Verificada</span>
+                        </div>
+
+                        <!-- Barra de composición -->
+                        <label class="small text-muted fw-semibold">COMPOSICIÓN DE VOLUMEN ABSOLUTO</label>
+                        <div class="mix-preview-bar">
+                            <div style="width: 11%; background: #455A64;" title="Cemento 11%"></div>
+                            <div style="width: 17.5%; background: #0288D1;" title="Agua 17.5%"></div>
+                            <div style="width: 29%; background: #F57C00;" title="Arena 29%"></div>
+                            <div style="width: 40.5%; background: #795548;" title="Piedra 40.5%"></div>
+                            <div style="width: 2%; background: #9E9E9E;" title="Aire 2%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mb-3" style="font-size: 11px;">
+                            <span><span class="badge rounded-circle p-1 me-1" style="background:#455A64;"> </span>Cemento: 350 kg</span>
+                            <span><span class="badge rounded-circle p-1 me-1" style="background:#0288D1;"> </span>Agua: 175 L</span>
+                            <span><span class="badge rounded-circle p-1 me-1" style="background:#F57C00;"> </span>Fino: 795 kg</span>
+                            <span><span class="badge rounded-circle p-1 me-1" style="background:#795548;"> </span>Grueso: 1045 kg</span>
+                        </div>
+
+                        <!-- Métricas del preview -->
+                        <div class="row g-2 text-center mt-2">
+                            <div class="col-4">
+                                <div class="p-2 rounded bg-light border">
+                                    <div class="text-muted small" style="font-size:11px;">Relación A/C</div>
+                                    <div class="fw-bold text-dark fs-6">0.500</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 rounded bg-light border">
+                                    <div class="text-muted small" style="font-size:11px;">Costo por m³</div>
+                                    <div class="fw-bold text-success fs-6">S/ 248.80</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 rounded bg-light border">
+                                    <div class="text-muted small" style="font-size:11px;">Huella CO₂</div>
+                                    <div class="fw-bold text-primary fs-6">234 kg/m³</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dictamen IA en miniatura -->
+                        <div class="p-3 mt-3 rounded-3" style="background: rgba(31, 77, 63, 0.06); border: 1px dashed var(--cc-brand);">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="bi bi-robot text-success"></i>
+                                <strong class="small" style="color:var(--cc-brand);">Asistente IA Concreta:</strong>
+                            </div>
+                            <p class="mb-0 small text-secondary" style="font-size:12px; line-height:1.4;">
+                                "La dosificación cumple rigurosamente con f'cr = 364 kg/cm² bajo ACI 211.1. Al incorporar 30% de puzolana natural se evitan 112 kg de CO₂/m³ con un ahorro económico del 14.8% frente a Cemento Tipo I tradicional."
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Insignia flotante decorativa -->
+                    <div class="hero-float-badge d-none d-sm-flex" style="bottom: -15px; left: -20px;">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width:36px; height:36px; background-color:var(--cc-brand) !important;">
+                            <i class="bi bi-check2 fs-5"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small">Tandas para Obra</div>
+                            <div class="text-muted" style="font-size:11px;">Bolsas, baldes y carretillas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Características Clave -->
+    <section id="caracteristicas" class="py-5 bg-white border-top border-bottom">
+        <div class="container py-4">
+            <div class="text-center max-w-700 mx-auto mb-5">
+                <span class="badge bg-light text-secondary border px-3 py-1 mb-2">FUNCIONALIDADES AVANZADAS</span>
+                <h2 class="fw-bold text-dark">Todo lo que necesitas para tu obra y laboratorio</h2>
+                <p class="text-muted">Diseñado específicamente para ingenieros civiles, residentes de obra, laboratoristas y docentes de tecnología del concreto.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="landing-card">
+                        <div class="icon-box"><i class="bi bi-calculator"></i></div>
+                        <h5 class="fw-bold mb-2">Metodología ACI 211.1</h5>
+                        <p class="text-muted small">Cálculo automatizado de volumen absoluto, relación agua/cemento por durabilidad o compresión, y ajuste exacto según asentamiento de cono de Abrams.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="landing-card">
+                        <div class="icon-box"><i class="bi bi-stars"></i></div>
+                        <h5 class="fw-bold mb-2">Dictamen con Inteligencia Artificial</h5>
+                        <p class="text-muted small">Conexión con Google Gemini para emitir reportes técnicos automatizados, análisis de viabilidad, sugerencias de adiciones y justificaciones ejecutivas.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="landing-card">
+                        <div class="icon-box"><i class="bi bi-truck"></i></div>
+                        <h5 class="fw-bold mb-2">Corrección por Humedad y Tandas</h5>
+                        <p class="text-muted small">Ajuste de humedad y absorción de agregados en tiempo real. Conversión inmediata a unidades de campo: bolsas de 42.5 kg, baldes de 18 L y carretillas de 50 kg.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="landing-card">
+                        <div class="icon-box"><i class="bi bi-activity"></i></div>
+                        <h5 class="fw-bold mb-2">Control de Rotura de Probetas</h5>
+                        <p class="text-muted small">Registro riguroso de ensayos a 3, 7, 14, 28 y 56 días. Gráficos interactivos de evolución de resistencia vs f'c especificado (NTP 339.034).</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="landing-card">
+                        <div class="icon-box"><i class="bi bi-tree"></i></div>
+                        <h5 class="fw-bold mb-2">Huella de Carbono (CO₂)</h5>
+                        <p class="text-muted small">Cuantificación del factor de emisión kg CO₂e por cada metro cúbico producido. Fomenta el uso de cementos ecológicos adicionados (Tipo IP / Yura).</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="landing-card">
+                        <div class="icon-box"><i class="bi bi-ui-checks-grid"></i></div>
+                        <h5 class="fw-bold mb-2">Comparador Multicriterio</h5>
+                        <p class="text-muted small">Compara hasta 5 mezclas simultáneamente considerando balance de costos, sostenibilidad ambiental y cumplimiento de resistencia estructural.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Metodología y Flujo -->
+    <section id="metodologia" class="py-5" style="background:#f4f8f6;">
+        <div class="container py-4">
+            <div class="text-center max-w-700 mx-auto mb-5">
+                <span class="badge bg-white text-secondary border px-3 py-1 mb-2">FLUJO DE TRABAJO ÁGIL</span>
+                <h2 class="fw-bold text-dark">Del laboratorio a la obra en 4 pasos</h2>
+                <p class="text-muted">Proceso estandarizado bajo normas ASTM y NTP para garantizar calidad sin retrasos.</p>
+            </div>
+
+            <div class="row g-4 text-center">
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-4 bg-white rounded-4 border h-100 shadow-sm">
+                        <div class="landing-step-num">01</div>
+                        <h6 class="fw-bold text-dark">Definir Proyecto</h6>
+                        <p class="small text-muted mb-0">Ingresa la resistencia f'c, tipo de elemento estructural, tamaño máximo de agregado y revenimiento requerido.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-4 bg-white rounded-4 border h-100 shadow-sm">
+                        <div class="landing-step-num">02</div>
+                        <h6 class="fw-bold text-dark">Seleccionar Materiales</h6>
+                        <p class="small text-muted mb-0">Elige cementos Portland tradicionales o con adición puzolánica, agregados locales y dosificación de aditivos.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-4 bg-white rounded-4 border h-100 shadow-sm">
+                        <div class="landing-step-num">03</div>
+                        <h6 class="fw-bold text-dark">Ajustar Humedad de Campo</h6>
+                        <p class="small text-muted mb-0">Aplica la corrección por humedad superficial y absorción para obtener los pesos de obra y tandas exactas.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-4 bg-white rounded-4 border h-100 shadow-sm">
+                        <div class="landing-step-num">04</div>
+                        <h6 class="fw-bold text-dark">Ensayos y Validación IA</h6>
+                        <p class="small text-muted mb-0">Registra roturas a compresión, grafica la curva de madurez y genera el dictamen ejecutivo con IA.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roles / Perfiles -->
+    <section id="roles" class="py-5 bg-white border-top">
+        <div class="container py-4">
+            <div class="text-center max-w-700 mx-auto mb-5">
+                <span class="badge bg-light text-secondary border px-3 py-1 mb-2">PERFILES DE TRABAJO</span>
+                <h2 class="fw-bold text-dark">Diseñado para colaborar en equipo</h2>
+                <p class="text-muted">Roles especializados para mantener la integridad de los datos en oficina técnica y laboratorio.</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-5">
+                    <div class="p-4 rounded-4 border h-100" style="background: linear-gradient(145deg, #ffffff 0%, #f7fbf9 100%);">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="rounded-3 p-3 text-white" style="background:var(--cc-brand);">
+                                <i class="bi bi-briefcase fs-3"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0">Perfil Ingeniero</h4>
+                                <span class="badge bg-light text-success border">Oficina Técnica y Residencia</span>
+                            </div>
+                        </div>
+                        <ul class="text-secondary small mb-4 d-flex flex-column gap-2" style="list-style:none; padding-left:0;">
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Creación y cálculo de diseños de mezclas ACI 211.1.</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Comparación multicriterio de costos vs CO₂ vs resistencia.</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Generación de dictámenes automatizados con Google Gemini.</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Cálculo inmediato de tandas prácticas para trompo y mixer.</li>
+                        </ul>
+                        <a href="@Url.Action("Registro", "Cuenta")" class="btn btn-outline-success w-100" style="color:var(--cc-brand); border-color:var(--cc-brand);">
+                            Registrarse como Ingeniero
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="p-4 rounded-4 border h-100" style="background: linear-gradient(145deg, #ffffff 0%, #f7fbf9 100%);">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="rounded-3 p-3 text-white bg-dark">
+                                <i class="bi bi-eyedropper fs-3"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0">Perfil Laboratorista</h4>
+                                <span class="badge bg-light text-dark border">Control de Calidad y Ensayos</span>
+                            </div>
+                        </div>
+                        <ul class="text-secondary small mb-4 d-flex flex-column gap-2" style="list-style:none; padding-left:0;">
+                            <li><i class="bi bi-check-circle-fill text-dark me-2"></i> Registro de rotura de probetas cilíndricas (3, 7, 14, 28 y 56 días).</li>
+                            <li><i class="bi bi-check-circle-fill text-dark me-2"></i> Control de asentamiento de slump y temperatura en obra.</li>
+                            <li><i class="bi bi-check-circle-fill text-dark me-2"></i> Monitoreo de curvas de resistencia frente al f'c proyectado.</li>
+                            <li><i class="bi bi-check-circle-fill text-dark me-2"></i> Validación de cumplimiento estadístico según norma NTP.</li>
+                        </ul>
+                        <a href="@Url.Action("Registro", "Cuenta")" class="btn btn-outline-dark w-100">
+                            Registrarse como Laboratorista
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sostenibilidad e Impacto -->
+    <section id="impacto" class="py-5 bg-light">
+        <div class="container py-4">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <span class="badge bg-white text-success border border-success-subtle px-3 py-1 mb-2">SOSTENIBILIDAD REAL</span>
+                    <h2 class="fw-bold text-dark">Construcción baja en carbono con cementos adicionados</h2>
+                    <p class="text-muted">
+                        La producción de cemento Portland ordinario representa cerca del 8% de las emisiones globales de CO₂. Concreta facilita la adopción de cementos Tipo IP y adicionados con puzolana local del sur peruano (Arequipa, Moquegua, Tacna), logrando:
+                    </p>
+                    <div class="row g-3 mt-1">
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white rounded-3 border">
+                                <h3 class="fw-bold text-success mb-1">-40%</h3>
+                                <p class="small text-muted mb-0">Menor huella de carbono al sustituir clínker por puzolana natural.</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white rounded-3 border">
+                                <h3 class="fw-bold text-dark mb-1">+Durable</h3>
+                                <p class="small text-muted mb-0">Mayor resistencia a ataques por sulfatos y menor calor de hidratación.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="landing-comparison-box">
+                        <h6 class="fw-bold text-dark mb-3">Comparativa de Emisiones por m³ (f'c = 210 kg/cm²)</h6>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Cemento Portland Tipo I Tradicional</span>
+                                <span class="fw-bold text-danger">315 kg CO₂e/m³</span>
+                            </div>
+                            <div class="progress" style="height: 12px;">
+                                <div class="progress-bar bg-danger" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Cemento Puzolánico Tipo IP (Yura)</span>
+                                <span class="fw-bold text-success">202 kg CO₂e/m³ (-36%)</span>
+                            </div>
+                            <div class="progress" style="height: 12px;">
+                                <div class="progress-bar bg-success" style="width: 64%; background-color: var(--cc-brand) !important;"></div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded bg-light border small text-muted">
+                            <i class="bi bi-info-circle text-primary me-1"></i>
+                            En una obra mediana de 1,500 m³ de concreto, el uso de mezclas optimizadas en Concreta evita la emisión de <strong>más de 169 toneladas de CO₂</strong> al medio ambiente.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Banner CTA Final -->
+    <section class="py-5 bg-white">
+        <div class="container py-3">
+            <div class="landing-cta-banner text-center text-white">
+                <h2 class="fw-bold mb-3">Empieza a diseñar mezclas de concreto inteligentes hoy</h2>
+                <p class="mx-auto mb-4" style="max-width: 600px; opacity: 0.9;">
+                    Únete a la plataforma tecnológica que une la precisión matemática de la ACI 211.1, la economía en obra y la sostenibilidad ambiental.
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="@Url.Action("Registro", "Cuenta")" class="btn btn-light px-4 py-2 text-dark fw-bold" style="height:44px;">
+                        <i class="bi bi-person-plus"></i> Registrarse gratis
+                    </a>
+                    <a href="@Url.Action("Login", "Cuenta")" class="btn btn-outline-light px-4 py-2 fw-medium" style="height:44px;">
+                        <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="container">
+            <div class="row g-4 justify-content-between mb-4">
+                <div class="col-lg-4">
+                    <div class="brand text-white mb-2" style="border:0; padding:0; height:auto;">
+                        <span class="brand-mark bg-success"></span>
+                        <span class="text-white">CONCRETA</span>
+                    </div>
+                    <p class="small text-muted" style="max-width: 320px;">
+                        Sistema web de apoyo al diseño de mezclas de concreto con cementos adicionados, optimización de costos, control de huella de carbono e inteligencia artificial.
+                    </p>
+                </div>
+
+                <div class="col-sm-6 col-lg-3">
+                    <h6 class="text-white fw-bold small text-uppercase mb-3">Normativa de Referencia</h6>
+                    <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
+                        <li>ACI 211.1 (Standard Practice for Selecting Proportions)</li>
+                        <li>NTP 334.090 / ASTM C595 (Cementos Adicionados)</li>
+                        <li>NTP 339.034 / ASTM C39 (Compresión de Probetas)</li>
+                        <li>NTP 339.035 / ASTM C143 (Asentamiento Slump)</li>
+                    </ul>
+                </div>
+
+                <div class="col-sm-6 col-lg-3">
+                    <h6 class="text-white fw-bold small text-uppercase mb-3">Proyecto Académico</h6>
+                    <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
+                        <li>Programación Web II</li>
+                        <li>Universidad Privada de Tacna (UPT)</li>
+                        <li>Hackathon Innova Sur 2026</li>
+                        <li>Tacna, Perú</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-3 border-top border-secondary border-opacity-25 d-flex flex-wrap justify-content-between align-items-center text-muted small">
+                <span>&copy; @DateTime.Now.Year Concreta · Todos los derechos reservados.</span>
+                <div class="d-flex gap-3">
+                    <a href="@Url.Action("Login", "Cuenta")">Acceso</a>
+                    <a href="@Url.Action("Registro", "Cuenta")">Registro</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    @Html.Partial("_Scripts")
+</body>
+</html>

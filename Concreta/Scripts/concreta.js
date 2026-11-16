@@ -1,4 +1,4 @@
-﻿/* Concreta: interacciones puntuales (vanilla JS) */
+/* Concreta: interacciones puntuales (vanilla JS) */
 (function () {
   'use strict';
 
@@ -90,3 +90,98 @@
     requestAnimationFrame(function () { requestAnimationFrame(function () { s.style.width = ancho; }); });
   });
 })();
+
+/**
+ * Renderizador de Markdown especializado para respuestas de IA (Concreta)
+ * Convierte asteriscos, viñetas, títulos y negritas en HTML limpio y estructurado.
+ */
+window.renderizarMarkdownIa = function (texto) {
+  if (!texto) return '';
+
+  var src = String(texto).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  // 1. Eliminar preámbulos tipo "Como Ingeniero Civil...", "Como consultor...", etc.
+  src = src.replace(/^(?:Como\s+[^:\n]+[:\.\-]|A\s+continuación[^:\n]+[:\.\-]|Presento\s+el\s+dictamen[^:\n]+[:\.\-]|En\s+calidad\s+de[^:\n]+[:\.\-])\s*/i, '');
+  var idxInicio = src.search(/(?:#{1,4}\s*1\.|\b1\.\s+[A-ZÁÉÍÓÚ]|###\s+Evaluación)/i);
+  if (idxInicio > 0 && idxInicio < 400) {
+    src = src.substring(idxInicio);
+  }
+
+  // 2. Forzar saltos de línea antes de encabezados y viñetas pegadas
+  src = src.replace(/([^\n])\s*(#{1,4}\s*)/g, '$1\n\n$2');
+  src = src.replace(/([^\n])\s*(\b[1-4]\.\s+[A-ZÁÉÍÓÚ])/g, '$1\n\n$2');
+  src = src.replace(/([^\n])\s*([-\*•]\s*\*\*)/g, '$1\n$2');
+  src = src.replace(/([^\n])\s*([-\*•]\s+[A-ZÁÉÍÓÚ])/g, '$1\n$2');
+
+  // 3. Encabezados markdown ###, ##, #
+  src = src.replace(/^###\s*(.*$)/gim, '<h5 class="ai-heading">$1</h5>');
+  src = src.replace(/^##\s*(.*$)/gim, '<h4 class="ai-heading">$1</h4>');
+  src = src.replace(/^#\s*(.*$)/gim, '<h4 class="ai-heading">$1</h4>');
+
+  // 4. Encabezados numerados tipo "1. Evaluación de Dosificación"
+  src = src.replace(/^(\d+\.\s+[^\n<]+)/gim, '<h4 class="ai-heading">$1</h4>');
+
+  // 5. Negritas dobles: **texto** -> <strong>texto</strong>
+  src = src.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+  // 6. Procesar línea por línea para agrupar listas y párrafos
+  var lineas = src.split('\n');
+  var resultado = [];
+  var enLista = false;
+
+  for (var i = 0; i < lineas.length; i++) {
+    var linea = lineas[i].trim();
+    if (!linea) {
+      if (enLista) {
+        resultado.push('</ul>');
+        enLista = false;
+      }
+      continue;
+    }
+
+    if (linea.indexOf('<h4') === 0 || linea.indexOf('<h5') === 0) {
+      if (enLista) {
+        resultado.push('</ul>');
+        enLista = false;
+      }
+      linea = linea.replace(/\*/g, '').replace(/#{1,4}/g, '').trim();
+      resultado.push(linea);
+      continue;
+    }
+
+    var matchVineta = linea.match(/^[\*\-\•\+]\s*(.*)$/);
+    if (matchVineta) {
+      if (!enLista) {
+        resultado.push('<ul class="ai-bullet-list">');
+        enLista = true;
+      }
+
+      var contenido = matchVineta[1].trim();
+      contenido = contenido.replace(/^[\*\-\•\+]\s*/, '');
+      contenido = contenido.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+      if (contenido.indexOf('<strong>') === -1) {
+        contenido = contenido.replace(/^([^:]{3,45}:)/, '<strong>$1</strong>');
+      }
+
+      contenido = contenido.replace(/\*/g, '');
+      resultado.push('<li>' + contenido + '</li>');
+    } else {
+      if (enLista) {
+        resultado.push('</ul>');
+        enLista = false;
+      }
+
+      linea = linea.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      linea = linea.replace(/\*/g, '');
+      resultado.push('<p class="ai-para">' + linea + '</p>');
+    }
+  }
+
+  if (enLista) {
+    resultado.push('</ul>');
+  }
+
+  return resultado.join('\n');
+};
+

@@ -1,4 +1,4 @@
-﻿@model DisenoDetalleVM
+@model DisenoDetalleVM
 @{
     var d = Model.Diseno;
     ViewBag.Title = d.Codigo;
@@ -160,6 +160,95 @@
     <div class="help mt-2">El diseño cumple si el promedio de las probetas de compresión a 28 días alcanza f'c = @d.FcKgCm2 kg/cm².</div>
 </div>
 
+<div class="section">
+    <div class="ai-panel">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="ai-badge"><i class="bi bi-stars"></i> IA Concreta</span>
+                <h2 class="mb-0" style="font-size:16px">Dictamen Técnico & Asesoría Especializada</h2>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btnAnalizarIa">
+                <i class="bi bi-robot"></i><span id="btnTextoIa">Analizar con IA</span>
+            </button>
+        </div>
+        <p class="meta mb-2" id="descIa">
+            Obtén un informe técnico generado con Inteligencia Artificial que evalúa la relación a/c, trabajabilidad, precauciones según el tipo de cemento adicionado, curado y proyección de resistencia.
+        </p>
+        <div id="cargandoIa" class="text-center py-4" style="display:none">
+            <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem">
+                <span class="visually-hidden">Consultando a la IA...</span>
+            </div>
+            <div class="meta mt-2">Analizando parámetros ACI, durabilidad y materiales con Gemini...</div>
+        </div>
+        <div id="resultadoIa" class="ai-content mt-3 p-3 bg-white rounded border" style="display:none">
+            <div class="d-flex justify-content-end mb-2">
+                <button type="button" class="btn btn-ghost btn-sm" id="btnCopiarIa"><i class="bi bi-clipboard"></i> Copiar dictamen</button>
+            </div>
+            <div id="textoDictamenIa"></div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="calc-tanda-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h2 class="section-title"><i class="bi bi-calculator me-1"></i> Calculadora de tanda en obra</h2>
+                    <span class="badge bg-light text-dark border">Dosificación de campo</span>
+                </div>
+                <p class="meta mb-3">Calcula los materiales necesarios según el volumen requerido o el número de bolsas de cemento.</p>
+                
+                <div class="row g-2 mb-3 align-items-center">
+                    <div class="col-sm-6">
+                        <label class="form-label" for="volumenM3">Volumen de vaciado (m³):</label>
+                        <div class="input-group">
+                            <input type="number" id="volumenM3" class="form-control" value="1.0" min="0.1" step="0.1">
+                            <span class="input-group-text">m³</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Atajos comunes:</label>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <button type="button" class="quick-btn" onclick="fijarVolumen(0.25)">0.25 m³</button>
+                            <button type="button" class="quick-btn" onclick="fijarVolumen(0.5)">0.5 m³</button>
+                            <button type="button" class="quick-btn" onclick="fijarVolumen(1.0)">1 m³</button>
+                            <button type="button" class="quick-btn" onclick="fijarVolumen(8.0)">8 m³ (Mixer)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="table-cc table-sm">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th class="num">Peso obra</th>
+                                <th class="num">Equivalencia práctica</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaTandaBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="chart-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h2 class="section-title"><i class="bi bi-graph-up me-1"></i> Curva de evolución de f'c</h2>
+                    <span class="unit">Meta: @d.FcKgCm2 kg/cm²</span>
+                </div>
+                <div style="position:relative;height:240px;width:100%">
+                    <canvas id="graficoResistencia"></canvas>
+                </div>
+                <div class="help mt-2 text-center">Evolución de probetas ensayadas a compresión vs resistencia meta f'c.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @if (Model.PuedeRegistrarEnsayo)
 {
     @Html.Partial("_ConfirmarEliminar")
@@ -182,3 +271,262 @@
         </div>
     </div>
 }
+
+@section Scripts {
+    <script src="~/Scripts/lib/chart.umd.min.js"></script>
+    <script>
+        // --- 1. IA: Análisis y Dictamen con Gemini ---
+        var btnIa = document.getElementById('btnAnalizarIa');
+        var btnTextoIa = document.getElementById('btnTextoIa');
+        var cargandoIa = document.getElementById('cargandoIa');
+        var resultadoIa = document.getElementById('resultadoIa');
+        var textoDictamenIa = document.getElementById('textoDictamenIa');
+        var btnCopiarIa = document.getElementById('btnCopiarIa');
+
+        function renderizarMarkdownIa(texto) {
+            if (!texto) return '';
+            var src = String(texto).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+            // 1. Eliminar preámbulos tipo "Como Ingeniero Civil...", "Como consultor...", etc.
+            src = src.replace(/^(?:Como\s+[^:\n]+[:\.\-]|A\s+continuación[^:\n]+[:\.\-]|Presento\s+el\s+dictamen[^:\n]+[:\.\-]|En\s+calidad\s+de[^:\n]+[:\.\-])\s*/i, '');
+            var idxInicio = src.search(/(?:#{1,4}\s*1\.|\b1\.\s+[A-ZÁÉÍÓÚ]|###\s+Evaluación)/i);
+            if (idxInicio > 0 && idxInicio < 400) {
+                src = src.substring(idxInicio);
+            }
+
+            // 2. Forzar saltos de línea antes de encabezados y viñetas pegadas
+            src = src.replace(/([^\n])\s*(#{1,4}\s*)/g, '$1\n\n$2');
+            src = src.replace(/([^\n])\s*(\b[1-4]\.\s+[A-ZÁÉÍÓÚ])/g, '$1\n\n$2');
+            src = src.replace(/([^\n])\s*([-\*•]\s*\*\*)/g, '$1\n$2');
+            src = src.replace(/([^\n])\s*([-\*•]\s+[A-ZÁÉÍÓÚ])/g, '$1\n$2');
+
+            // 3. Encabezados markdown
+            src = src.replace(/^###\s*(.*$)/gim, '<h5 class="ai-heading">$1</h5>');
+            src = src.replace(/^##\s*(.*$)/gim, '<h4 class="ai-heading">$1</h4>');
+            src = src.replace(/^#\s*(.*$)/gim, '<h4 class="ai-heading">$1</h4>');
+            src = src.replace(/^(\d+\.\s+[^\n<]+)/gim, '<h4 class="ai-heading">$1</h4>');
+
+            // 4. Negritas
+            src = src.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            var lineas = src.split('\n');
+            var resultado = [];
+            var enLista = false;
+
+            for (var i = 0; i < lineas.length; i++) {
+                var linea = lineas[i].trim();
+                if (!linea) {
+                    if (enLista) { resultado.push('</ul>'); enLista = false; }
+                    continue;
+                }
+
+                if (linea.indexOf('<h4') === 0 || linea.indexOf('<h5') === 0) {
+                    if (enLista) { resultado.push('</ul>'); enLista = false; }
+                    linea = linea.replace(/\*/g, '').replace(/#{1,4}/g, '').trim();
+                    resultado.push(linea);
+                    continue;
+                }
+
+                var matchVineta = linea.match(/^[\*\-\•\+]\s*(.*)$/);
+                if (matchVineta) {
+                    if (!enLista) { resultado.push('<ul class="ai-bullet-list">'); enLista = true; }
+                    var contenido = matchVineta[1].trim();
+                    contenido = contenido.replace(/^[\*\-\•\+]\s*/, '');
+                    contenido = contenido.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                    if (contenido.indexOf('<strong>') === -1) {
+                        contenido = contenido.replace(/^([^:]{3,45}:)/, '<strong>$1</strong>');
+                    }
+                    contenido = contenido.replace(/\*/g, '');
+                    resultado.push('<li>' + contenido + '</li>');
+                } else {
+                    if (enLista) { resultado.push('</ul>'); enLista = false; }
+                    linea = linea.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                    linea = linea.replace(/\*/g, '');
+                    resultado.push('<p class="ai-para">' + linea + '</p>');
+                }
+            }
+
+            if (enLista) resultado.push('</ul>');
+            return resultado.join('\n');
+        }
+
+        if (btnIa) {
+            btnIa.addEventListener('click', function () {
+                btnIa.disabled = true;
+                btnTextoIa.textContent = 'Analizando...';
+                cargandoIa.style.display = 'block';
+                resultadoIa.style.display = 'none';
+
+                fetch('@Url.Action("AnalizarIa", "Disenos", new { id = d.IdDiseno })', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    cargandoIa.style.display = 'none';
+                    btnIa.disabled = false;
+                    btnTextoIa.textContent = 'Reanalizar con IA';
+                    if (data.ok) {
+                        textoDictamenIa.innerHTML = renderizarMarkdownIa(data.dictamen);
+                        resultadoIa.style.display = 'block';
+                    } else {
+                        textoDictamenIa.innerHTML = '<div class="alert alert-danger">' + (data.error || 'Error al consultar la IA.') + '</div>';
+                        resultadoIa.style.display = 'block';
+                    }
+                })
+                .catch(function (err) {
+                    cargandoIa.style.display = 'none';
+                    btnIa.disabled = false;
+                    btnTextoIa.textContent = 'Analizar con IA';
+                    textoDictamenIa.innerHTML = '<div class="alert alert-danger">Error de red al conectar con el servidor: ' + err.message + '</div>';
+                    resultadoIa.style.display = 'block';
+                });
+            });
+
+            if (btnCopiarIa) {
+                btnCopiarIa.addEventListener('click', function () {
+                    var texto = textoDictamenIa.innerText;
+                    navigator.clipboard.writeText(texto).then(function () {
+                        btnCopiarIa.innerHTML = '<i class="bi bi-check2"></i> ¡Copiado!';
+                        setTimeout(function () {
+                            btnCopiarIa.innerHTML = '<i class="bi bi-clipboard"></i> Copiar dictamen';
+                        }, 2000);
+                    });
+                });
+            }
+        }
+
+        // --- 2. Calculadora de tanda de obra ---
+        @{
+            var listaCalc = (Model.Dosificacion.PesosObra != null)
+                ? Model.Dosificacion.PesosObra.Lineas.Select(l => new { tipo = l.Tipo, material = l.Material, kgM3 = (double)l.ObraKg }).ToList()
+                : Model.Dosificacion.Lineas.Select(l => new { tipo = l.Tipo, material = l.Material?.Nombre ?? l.Tipo, kgM3 = (double)l.CantidadKg }).ToList();
+            var jsonLineas = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(listaCalc);
+        }
+        var materialesBase = @Html.Raw(jsonLineas);
+
+        function actualizarTanda() {
+            var m3 = parseFloat(document.getElementById('volumenM3').value) || 0;
+            var tbody = document.getElementById('tablaTandaBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            materialesBase.forEach(function (m) {
+                var kgTotal = m.kgM3 * m3;
+                var equiv = '—';
+
+                if (m.tipo === 'Cemento') {
+                    var bolsas = (kgTotal / 42.5).toFixed(1);
+                    equiv = '<strong>' + bolsas + '</strong> bolsas (42.5 kg)';
+                } else if (m.tipo === 'Arena' || m.tipo === 'Piedra') {
+                    // Carretilla estándar rasante ~ 50 kg de agregado húmedo
+                    var carretillas = (kgTotal / 50).toFixed(1);
+                    equiv = '~ ' + carretillas + ' carretillas (50 kg)';
+                } else if (m.tipo === 'Agua') {
+                    // Litros y baldes de 18 L
+                    var baldes = (kgTotal / 18).toFixed(1);
+                    equiv = kgTotal.toFixed(1) + ' L (~ ' + baldes + ' baldes)';
+                } else if (m.tipo === 'Aditivo') {
+                    equiv = (kgTotal * 1000).toFixed(0) + ' gramos / mL';
+                }
+
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + m.material + '</td>' +
+                    '<td class="num">' + kgTotal.toFixed(1) + ' kg</td>' +
+                    '<td class="num" style="text-align:left">' + equiv + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+
+        function fijarVolumen(v) {
+            document.getElementById('volumenM3').value = v;
+            actualizarTanda();
+        }
+
+        var inputVolumen = document.getElementById('volumenM3');
+        if (inputVolumen) {
+            inputVolumen.addEventListener('input', actualizarTanda);
+            actualizarTanda();
+        }
+
+        // --- 3. Gráfico de evolución de resistencia (Chart.js) ---
+        @{
+            var ensayosCompresion = ensayos
+                .Where(e => e.TipoEnsayo == EnsayoLaboratorio.Compresion && e.EdadDias.HasValue)
+                .OrderBy(e => e.EdadDias.Value)
+                .Select(e => new { edad = e.EdadDias.Value, valor = (double)e.ValorObtenido })
+                .ToList();
+            var jsonEnsayos = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(ensayosCompresion);
+        }
+        var ensayosDatos = @Html.Raw(jsonEnsayos);
+        var fcMeta = @d.FcKgCm2;
+
+        var canvasGrafico = document.getElementById('graficoResistencia');
+        if (canvasGrafico && typeof Chart !== 'undefined') {
+            var diasLabels = [0, 3, 7, 14, 21, 28];
+            var datosPuntos = [];
+
+            // Punto inicial en día 0 = 0
+            datosPuntos.push({ x: 0, y: 0 });
+            ensayosDatos.forEach(function (e) {
+                datosPuntos.push({ x: e.edad, y: e.valor });
+            });
+
+            new Chart(canvasGrafico, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: "Resistencia obtenida (kg/cm²)",
+                            data: datosPuntos,
+                            borderColor: '#1F4D3F',
+                            backgroundColor: 'rgba(31, 77, 63, 0.15)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#1F4D3F'
+                        },
+                        {
+                            label: "Meta f'c (" + fcMeta + " kg/cm²)",
+                            data: [{ x: 0, y: fcMeta }, { x: 28, y: fcMeta }],
+                            borderColor: '#B42318',
+                            borderDash: [6, 4],
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: { display: true, text: 'Edad (días)', font: { size: 11 } },
+                            min: 0,
+                            max: 28,
+                            ticks: { stepSize: 7 }
+                        },
+                        y: {
+                            title: { display: true, text: "Resistencia (kg/cm²)", font: { size: 11 } },
+                            min: 0,
+                            suggestedMax: Math.max(fcMeta * 1.25, 250)
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + ' kg/cm²';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+}
+

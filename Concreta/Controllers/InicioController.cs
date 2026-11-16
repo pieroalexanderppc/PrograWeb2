@@ -1,4 +1,4 @@
-﻿using System.Data.Entity;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -11,8 +11,14 @@ namespace Concreta.Controllers
 {
     public class InicioController : BaseController
     {
+        [AllowAnonymous]
         public async Task<ActionResult> Index()
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Landing", "Cuenta");
+            }
+
             int proyectos = await Db.Proyectos.CountAsync();
             int calculados = await Db.Disenos.CountAsync(d => d.Estado != DisenoMezcla.Borrador);
             int ensayos = await Db.Ensayos.CountAsync();

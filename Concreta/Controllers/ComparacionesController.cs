@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace Concreta.Controllers
     public class ComparacionesController : BaseController
     {
         private readonly IRecomendacionService _recomendacion = new RecomendacionService();
+        private readonly IIaService _ia = new GeminiIaService();
 
         public async Task<ActionResult> Index()
         {
@@ -118,6 +120,40 @@ namespace Concreta.Controllers
             }
             vm.Recomendada = vm.Columnas.FirstOrDefault(x => x.Diseno.IdDiseno == c.IdDisenoRecomendado);
             return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> JustificacionIa(int id)
+        {
+            var c = await Db.Comparaciones.Include(x => x.Detalles)
+                .FirstOrDefaultAsync(x => x.IdComparacion == id);
+            if (c == null) return HttpNotFound();
+
+            var ids = c.Detalles.Select(x => x.IdDiseno).ToList();
+            var disenos = await Db.Disenos.ConDetalle().Where(d => ids.Contains(d.IdDiseno)).ToListAsync();
+
+            var columnas = new List<ColumnaComparacion>();
+            foreach (var det in c.Detalles.OrderBy(x => x.Posicion ?? 99))
+            {
+                var d = disenos.First(x => x.IdDiseno == det.IdDiseno);
+                var dosificacion = DisenoConsultas.Dosificacion(d);
+                var cemento = dosificacion.Lineas.FirstOrDefault(l => l.Tipo == TipoLinea.Cemento);
+                var r28 = DisenoEstados.Resistencia28d(d);
+                columnas.Add(new ColumnaComparacion
+                {
+                    Diseno = d,
+                    Cemento = cemento?.Material.Nombre,
+                    CementoKg = cemento?.CantidadKg ?? 0m,
+                    Resistencia28d = r28,
+                    Estado = RecomendacionService.EvaluarResistencia(d.FcKgCm2, r28),
+                    Puntaje = det.Puntaje ?? 0m,
+                    Posicion = det.Posicion ?? 0,
+                    Dosificacion = dosificacion
+                });
+            }
+
+            var justificacion = await _ia.GenerarJustificacionComparacionAsync(c, columnas);
+            return Json(new { ok = true, justificacion });
         }
 
         private async Task LlenarDisenos(ComparacionFormVM vm)
